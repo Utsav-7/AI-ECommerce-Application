@@ -1,0 +1,140 @@
+E-commerce SRS Document
+1. Introduction
+1.1 Purpose
+This document describes the functional and non-functional requirements for an E-Commerce
+website.
+It will be used by developers, testers, and stakeholders to clearly understand what needs to be
+built and how the system should behave.
+1.2 Scope
+The system is a web-based E-Commerce platform where users can browse products, place
+orders, and make payments.
+Admins and Sellers manage products, orders, inventory, and reports.
+Technology Stack (Reference only):
+● Frontend: React 18, Tailwind CSS
+● Backend: .NET 8 (Web API)
+● Database: SQL Server
+● ORM: Entity Framework Core
+● Authentication: JWT Authentication
+● Payment: Use Stripe, etc which is provide free for learning Sendbox (testing)
+2. User Roles (Pre Seeding during migration)
+2.1 Admin
+● Full control over the system
+● Manages users, sellers, categories, products, coupons, and reports
+2.2 Seller (Vendor)
+● Manages own products and inventory
+● Views orders related to own products
+● Accesses sales and inventory reports
+2.3 User (Customer)
+● Browses products
+● Adds items to cart
+● Places orders and makes payments
+● Manages profile, address, reviews
+3. Functional Requirements
+3.1 Authentication (Login & Sign Up)
+● Users can register using email and password
+● Users can log in and log out securely
+● Role-based access after login (Admin / Seller / User)
+● Password reset functionality via email
+● Session or token-based authentication
+3.2 User Management
+● Admin can view all users and sellers
+● Admin can activate or deactivate users
+● Admin can assign or remove seller roles
+● Users can view and update their own profile
+3.3 Category Management
+● Admin can create, update, and delete categories
+● Categories can be hierarchical (parent/child)
+● Categories are visible to users for product browsing
+● Sellers can select categories while adding products
+3.4 Product Management
+● Sellers can add, edit, and delete their products
+● Admin can manage all products
+● Products include name, description, price, images, and availability
+● Products can be searched, filtered, and sorted by users
+● Product visibility can be enabled or disabled
+3.5 Coupon & Discount Management
+● Admin can create discount coupons
+● Coupons can be percentage-based or flat amount
+● Coupons have validity dates and usage limits
+● Users can apply coupons during checkout
+● System validates coupon before applying discount
+3.6 Test Payment Gateway
+● System supports a test or sandbox payment gateway
+● Users can make payments during checkout
+● Payment success and failure are handled properly
+● Payment status is stored with the order
+● No real money transactions are required
+3.7 Cart & Checkout Management
+● Users can add products to cart
+● Users can update quantity or remove items
+● Cart persists until checkout or logout
+● Checkout shows order summary, address, and payment option
+● Order is created after successful payment
+3.8 Address Management
+● Users can add multiple delivery addresses
+● Users can edit or delete saved addresses
+● One address can be selected during checkout
+● Default address option is available
+3.9 Review & Feedback Management
+● Users can submit reviews for purchased products
+● Reviews include rating and comments
+● Admin can view and moderate reviews
+● Reviews are displayed on product pages
+3.10 Vendor Reports & Dashboard
+● Sellers can view sales reports for their products
+● Dashboard shows total orders, revenue, and inventory status
+● Admin can view overall platform reports
+● Reports can be filtered by date range
+3.11 Order Management
+● Users can view order history
+● Users can request order cancellation (before shipment)
+● Sellers can update order status (Confirmed, Shipped, Delivered)
+● Admin can manage and override order status if required
+● Order tracking information is visible to users
+3.12 Inventory Management
+● Sellers can manage stock quantity for each product
+● System reduces inventory after successful order
+● Low stock alerts for sellers
+● Admin can view inventory across all sellers
+3.13 Future Enhancements
+● System should allow easy addition of new features such as:
+○ Wishlist
+○ Advanced analytics
+○ Multiple payment gateways
+○ Refund management
+○ Notifications (Email / SMS / Push)
+● Architecture should support scalability and modular development
+4. Non-Functional Requirements
+4.1 Performance
+● Pages should load within acceptable time under normal traffic
+● System should handle multiple concurrent users
+● Search and checkout operations must be fast
+4.2 Security
+● All sensitive data must be securely handled
+● Authentication and authorization must be enforced
+● Role-based access control is mandatory
+● Protection against common vulnerabilities (SQL Injection, XSS, CSRF)
+4.3 Scalability
+● System should support increasing number of users and products
+● Backend should allow horizontal scaling if required
+● Database design should support growth
+4.4 Availability & Reliability
+● System should be available most of the time
+● Proper error handling and logging must be implemented
+● Failures should not result in data loss
+4.5 Usability
+● User interface should be simple and intuitive
+● System should be easy to navigate on desktop and mobile
+● Error messages should be clear and helpful
+4.6 Maintainability
+● Codebase should be modular and easy to maintain
+● New features should be added without breaking existing functionality
+● Clear separation between frontend and backend
+4.7 Compatibility
+● Application should work on modern browsers
+● Responsive design for different screen sizes
+● API should support future frontend clients if needed
+5. Assumptions & Constraints
+● Only one test payment gateway will be used initially
+● Internet connection is required to use the system
+● Initial release focuses on core E-Commerce features only

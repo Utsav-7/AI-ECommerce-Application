@@ -1,0 +1,141 @@
+# .NET / ASP.NET Core
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## Build results
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+.vs
+
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Entity Framework
+**/Migrations/*.Designer.cs
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+*.mdf
+*.ldf
+*.ndf
+
+## Sensitive Files - CRITICAL
+appsettings.json
+appsettings.*.json
+!appsettings.Development.json.example
+!appsettings.Production.json.example
+**/appsettings.local.json
+**/appsettings.*.local.json
+secrets.json
+*.secrets.json
+
+## Environment Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# React / Node.js / Frontend
+## Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+## Build outputs
+dist/
+build/
+.next/
+out/
+.cache/
+
+## React specific
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+
+## Testing
+coverage/
+*.lcov
+.nyc_output/
+
+## Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+## IDE
+.idea/
+.DS_Store
+*.swp
+*.swo
+*~
+
+## Misc
+*.log
+*.pid
+*.seed
+*.pid.lock
