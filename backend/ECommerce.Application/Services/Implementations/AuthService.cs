@@ -74,11 +74,11 @@ public class AuthService : IAuthService
         // Create user
         var user = new Core.Entities.User
         {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
+            Email = request.Email.ToLower(),
             PasswordHash = passwordHash,
-            PhoneNumber = request.PhoneNumber,
+            PhoneNumber = request.PhoneNumber.Trim(),
             Role = request.Role,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
