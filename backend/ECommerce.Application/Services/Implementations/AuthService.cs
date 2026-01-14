@@ -5,6 +5,7 @@ using ECommerce.Application.Helpers;
 using ECommerce.Application.Services.Interfaces;
 using ECommerce.Core.DTOs.Request.Auth;
 using ECommerce.Core.DTOs.Response.Auth;
+using ECommerce.Core.Enums;
 using ECommerce.Core.Exceptions;
 using ECommerce.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -72,14 +73,15 @@ public class AuthService : IAuthService
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         // Create user
+        // Force role to User for all new registrations (security: prevent role escalation)
         var user = new Core.Entities.User
         {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
+            Email = request.Email.ToLower(),
             PasswordHash = passwordHash,
-            PhoneNumber = request.PhoneNumber,
-            Role = request.Role,
+            PhoneNumber = request.PhoneNumber?.Trim(),
+            Role = UserRole.User, // Always set to User for new registrations (default role)
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

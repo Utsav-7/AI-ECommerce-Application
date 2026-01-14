@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen(c =>
     // Add JWT Bearer token authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = "JWT Authorization header using the Bearer scheme. Enter your token in the text input below.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -108,6 +108,22 @@ builder.Services.AddAuthorization();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
+    options.AddPolicy("AllowLocalhost", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5173",  // Vite default port
+                "http://localhost:5174",  // Vite alternative port
+                "http://localhost:3000",  // Create React App default
+                "http://localhost:5175",  // Vite alternative
+                "http://localhost:5176",  // Vite alternative
+                "http://localhost:5177"   // Vite alternative
+              )
+              .AllowAnyMethod()  // Allows GET, POST, PUT, DELETE, OPTIONS, etc.
+              .AllowAnyHeader()  // Allows any headers including Authorization
+              .SetPreflightMaxAge(TimeSpan.FromSeconds(86400)); // Cache preflight for 24 hours
+    });
+
+    // For development: Allow all origins (less secure, use only in dev)
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
@@ -150,15 +166,21 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline
+
+// CRITICAL: CORS must be the FIRST middleware in the pipeline (even before Swagger)
+// This ensures preflight OPTIONS requests are handled before any redirects occur
+app.UseCors("AllowLocalhost");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseCors("AllowAll");
+// IMPORTANT: Do NOT use HTTPS redirection in development when using CORS
+// HTTPS redirection intercepts OPTIONS requests and redirects them, which violates CORS policy
+// Only enable HTTPS redirection in production environments
+// app.UseHttpsRedirection(); // COMMENTED OUT - Do not use in development with CORS
 
 app.UseAuthentication();
 app.UseAuthorization();
