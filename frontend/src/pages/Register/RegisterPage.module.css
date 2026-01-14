@@ -1,0 +1,124 @@
+.registerPageContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f7fafc;
+}
+
+.registerPageContent {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 140px);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.registerSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: white;
+}
+
+.registerFormWrapper {
+  width: 100%;
+  max-width: 500px;
+}
+
+.imageSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.imageSection::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 600px;
+  height: 600px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  z-index: 1;
+}
+
+.registerImage {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.imageOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 2rem;
+  border-radius: 0 0 16px 16px;
+  color: white;
+}
+
+.overlayTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.overlayText {
+  font-size: 1rem;
+  line-height: 1.6;
+  opacity: 0.95;
+  margin: 0;
+}
+
+@media (max-width: 968px) {
+  .registerPageContent {
+    grid-template-columns: 1fr;
+  }
+
+  .imageSection {
+    display: none;
+  }
+
+  .registerSection {
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .registerSection {
+    padding: 1.5rem 1rem;
+  }
+
+  .registerFormWrapper {
+    max-width: 100%;
+  }
+}
