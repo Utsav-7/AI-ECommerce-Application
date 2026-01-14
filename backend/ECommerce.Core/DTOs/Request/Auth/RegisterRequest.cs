@@ -28,6 +28,8 @@ public class RegisterRequest
     [Phone(ErrorMessage = "Invalid phone number format")]
     public string? PhoneNumber { get; set; }
 
-    public UserRole Role { get; set; } = UserRole.User;
+    // Role is not sent from frontend - backend will always set it to User
+    // Made nullable to avoid deserialization issues when not provided
+    public UserRole? Role { get; set; }
 }
 
