@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../../components/layout/Navbar/Navbar';
 import Footer from '../../../components/layout/Footer/Footer';
 import { authService } from '../../../services/api/authService';
+import { categoryService } from '../../../services/api/categoryService';
+import type { Category } from '../../../types/category.types';
 import styles from './Dashboard.module.css';
 
 // Import category images
@@ -18,17 +20,25 @@ import babyCategory from '../../../assets/Categories/Baby & Pregency.png';
 import healthcareCategory from '../../../assets/Categories/Healthcare.png';
 import householdCategory from '../../../assets/Categories/Household needs.png';
 
-// Import product images
-import product1 from '../../../assets/Products/product1.jpg';
-import product2 from '../../../assets/Products/product2.jpg';
-import product3 from '../../../assets/Products/product3.jpg';
-import product4 from '../../../assets/Products/product4.jpg';
 
 const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const userInfo = authService.getUserInfo();
   const categoriesRef = useRef<HTMLDivElement>(null);
   const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
+
+  // State for products and categories
+  const [products, setProducts] = useState<ProductPublic[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
+  const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc' | 'newest'>('newest');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -48,45 +58,132 @@ const UserDashboard: React.FC = () => {
       { threshold: 0.1 }
     );
 
-    if (categoriesRef.current) {
-      observer.observe(categoriesRef.current);
+    const currentRef = categoriesRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (categoriesRef.current) {
-        observer.unobserve(categoriesRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await productService.getPublicProducts();
+      setProducts(data);
+      
+      // Set max price from products
+      if (data.length > 0) {
+        const maxPrice = Math.max(...data.map(p => p.price));
+        setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryService.getAll();
+      setCategories(data);
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    }
+  };
+
+  // Fetch products and categories
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    let filtered = [...products];
+
+    // Filter by category
+    if (selectedCategory !== null) {
+      filtered = filtered.filter(p => p.categoryId === selectedCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.categoryName.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by price range
+    filtered = filtered.filter(p => {
+      const price = p.discountPrice || p.price;
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
+
+    // Sort products
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'price-asc':
+          return (a.discountPrice || a.price) - (b.discountPrice || b.price);
+        case 'price-desc':
+          return (b.discountPrice || b.price) - (a.discountPrice || a.price);
+        case 'newest':
+        default:
+          return 0; // Assuming products are already sorted by newest
+      }
+    });
+
+    return filtered;
+  }, [products, selectedCategory, searchQuery, priceRange, sortBy]);
+
+  const handleClearFilters = () => {
+    setSelectedCategory(null);
+    setSearchQuery('');
+    if (products.length > 0) {
+      const maxPrice = Math.max(...products.map(p => p.price));
+      setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
+    } else {
+      setPriceRange([0, 100000]);
+    }
+    setSortBy('newest');
+  };
 
   if (!userInfo) {
     return null;
   }
 
-  const categories = [
-    { name: 'Fruits & Vegetables', image: fruitsCategory },
-    { name: 'Beverages', image: beveragesCategory },
-    { name: 'Biscuits & Snacks', image: biscuitsCategory },
-    { name: 'Bread & Bakery', image: breadCategory },
-    { name: 'Breakfast & Dairy', image: breakfastCategory },
-    { name: 'Frozen Foods', image: frozenCategory },
-    { name: 'Grocery & Staples', image: groceryCategory },
-    { name: 'Meat & Seafoods', image: meatCategory },
-    { name: 'Baby & Pregnancy', image: babyCategory },
-    { name: 'Healthcare', image: healthcareCategory },
-    { name: 'Household Needs', image: householdCategory },
-  ];
+  // Map categories with images (fallback to default if category image not found)
+  const categoryImageMap: Record<string, string> = {
+    'Fruits & Vegetables': fruitsCategory,
+    'Drinks & Beverages': beveragesCategory,
+    'Beverages': beveragesCategory,
+    'Biscuits & Snacks': biscuitsCategory,
+    'Bread & Bakery': breadCategory,
+    'Breakfast & Dairy': breakfastCategory,
+    'Frozen Foods': frozenCategory,
+    'Grocery & Staples': groceryCategory,
+    'Meat & Seafoods': meatCategory,
+    'Baby & Pregnancy': babyCategory,
+    'Baby & Pregency': babyCategory,
+    'Healthcare': healthcareCategory,
+    'Household Needs': householdCategory,
+    'Household needs': householdCategory,
+  };
 
-  const products = [
-    { id: 1, name: 'Premium Headphones', description: 'High-quality wireless headphones with noise cancellation', price: 14999, image: product1, rating: 4.5, reviews: 234 },
-    { id: 2, name: 'Smart Watch', description: 'Feature-rich smartwatch with health tracking', price: 18999, image: product2, rating: 4.8, reviews: 456 },
-    { id: 3, name: 'Running Shoes', description: 'Comfortable athletic shoes for daily runs', price: 9999, image: product3, rating: 4.3, reviews: 189 },
-    { id: 4, name: 'Sunglasses', description: 'Stylish UV protection sunglasses', price: 2999, image: product4, rating: 4.6, reviews: 312 },
-    { id: 5, name: 'Wireless Earbuds', description: 'True wireless earbuds with long battery life', price: 4999, image: product1, rating: 4.4, reviews: 567 },
-    { id: 6, name: 'Fitness Tracker', description: 'Advanced fitness tracking with heart rate monitor', price: 7999, image: product2, rating: 4.7, reviews: 423 },
-    { id: 7, name: 'Backpack', description: 'Durable travel backpack with laptop compartment', price: 3499, image: product3, rating: 4.2, reviews: 278 },
-    { id: 8, name: 'Water Bottle', description: 'Insulated stainless steel water bottle', price: 1999, image: product4, rating: 4.5, reviews: 145 },
-  ];
+  const getCategoryImage = (categoryName: string): string => {
+    return categoryImageMap[categoryName] || fruitsCategory;
+  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -118,68 +215,157 @@ const UserDashboard: React.FC = () => {
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>Shop by Category</h2>
           <div className={`${styles.categoriesGrid} ${isCategoriesVisible ? styles.categoriesVisible : ''}`}>
-            {categories.map((category, index) => (
-              <Link
-                key={category.name}
-                to={`/products?category=${encodeURIComponent(category.name)}`}
-                className={styles.categoryCard}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className={styles.categoryImageWrapper}>
-                  <img 
-                    src={category.image} 
-                    alt={category.name}
-                    className={styles.categoryImage}
-                  />
-                  <div className={styles.categoryOverlay}>
-                    <h3 className={styles.categoryName}>{category.name}</h3>
+            {categories.length > 0 ? (
+              categories.map((category, index) => (
+                <Link
+                  key={category.id}
+                  to={`/products?category=${encodeURIComponent(category.name)}`}
+                  className={styles.categoryCard}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className={styles.categoryImageWrapper}>
+                    <img 
+                      src={getCategoryImage(category.name)} 
+                      alt={category.name}
+                      className={styles.categoryImage}
+                    />
+                    <div className={styles.categoryOverlay}>
+                      <h3 className={styles.categoryName}>{category.name}</h3>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            ) : (
+              <p>Loading categories...</p>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Products Section */}
-      <section className={styles.productsSection}>
+      {/* Sale Section */}
+      <section className={styles.saleSection}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>Featured Products</h2>
-          <div className={styles.productsGrid}>
-            {products.map((product) => (
-              <div key={product.id} className={styles.productCard}>
-                <div className={styles.productImage}>
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className={styles.productImageImg}
-                  />
-                  <div className={styles.productBadge}>New</div>
+          <div className={styles.saleBanner}>
+            <div className={styles.saleContent}>
+              <div className={styles.saleBadge}>MEGA SALE</div>
+              <h2 className={styles.saleTitle}>Up to 70% OFF</h2>
+              <p className={styles.saleDescription}>
+                Don't miss out on our biggest sale of the year! Limited time only.
+              </p>
+              <Link to="/products" className={styles.saleButton}>
+                Shop Now
+              </Link>
+            </div>
+            <div className={styles.saleTimer}>
+              <div className={styles.timerItem}>
+                <div className={styles.timerValue}>23</div>
+                <div className={styles.timerLabel}>Hours</div>
+              </div>
+              <div className={styles.timerSeparator}>:</div>
+              <div className={styles.timerItem}>
+                <div className={styles.timerValue}>59</div>
+                <div className={styles.timerLabel}>Minutes</div>
+              </div>
+              <div className={styles.timerSeparator}>:</div>
+              <div className={styles.timerItem}>
+                <div className={styles.timerValue}>45</div>
+                <div className={styles.timerLabel}>Seconds</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Offers Section */}
+      <section className={styles.offersSection}>
+        <div className={styles.container}>
+          <h2 className={styles.sectionTitle}>Special Offers</h2>
+          <div className={styles.offersGrid}>
+            <div className={styles.offerCard}>
+              <div className={styles.offerIcon}>🎁</div>
+              <div className={styles.offerBadge}>50% OFF</div>
+              <h3 className={styles.offerTitle}>Flash Sale</h3>
+              <p className={styles.offerDescription}>
+                Get up to 50% off on selected items. Limited time only!
+              </p>
+              <Link to="/products" className={styles.offerButton}>
+                Shop Now
+              </Link>
+            </div>
+            <div className={styles.offerCard}>
+              <div className={styles.offerIcon}>🚚</div>
+              <div className={styles.offerBadge}>FREE</div>
+              <h3 className={styles.offerTitle}>Free Delivery</h3>
+              <p className={styles.offerDescription}>
+                Free shipping on orders above ₹500. Shop now and save!
+              </p>
+              <Link to="/products" className={styles.offerButton}>
+                Shop Now
+              </Link>
+            </div>
+            <div className={styles.offerCard}>
+              <div className={styles.offerIcon}>🆕</div>
+              <div className={styles.offerBadge}>NEW</div>
+              <h3 className={styles.offerTitle}>New Arrivals</h3>
+              <p className={styles.offerDescription}>
+                Check out our newest additions. Fresh products every week!
+              </p>
+              <Link to="/products" className={styles.offerButton}>
+                Shop Now
+              </Link>
+            </div>
+            <div className={styles.offerCard}>
+              <div className={styles.offerIcon}>💰</div>
+              <div className={styles.offerBadge}>BUY 2 GET 1</div>
+              <h3 className={styles.offerTitle}>Buy More, Save More</h3>
+              <p className={styles.offerDescription}>
+                Buy 2 items and get 1 free on selected categories!
+              </p>
+              <Link to="/products" className={styles.offerButton}>
+                Shop Now
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Advertisement Section */}
+      <section className={styles.advertisementSection}>
+        <div className={styles.container}>
+          <div className={styles.adBanner}>
+            <div className={styles.adContent}>
+              <h2 className={styles.adTitle}>Premium Membership</h2>
+              <p className={styles.adDescription}>
+                Join our premium membership and enjoy exclusive benefits, early access to sales, 
+                and special discounts throughout the year.
+              </p>
+              <div className={styles.adFeatures}>
+                <div className={styles.adFeature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>Exclusive Discounts</span>
                 </div>
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productName}>{product.name}</h3>
-                  <p className={styles.productDescription}>{product.description}</p>
-                  <div className={styles.productRating}>
-                    <span className={styles.stars}>
-                      {'★'.repeat(Math.floor(product.rating))}
-                      {'☆'.repeat(5 - Math.floor(product.rating))}
-                    </span>
-                    <span className={styles.ratingText}>({product.reviews})</span>
-                  </div>
-                  <div className={styles.productPriceRow}>
-                    <div className={styles.productPrice}>₹{product.price.toLocaleString('en-IN')}</div>
-                    <div className={styles.productOriginalPrice}>₹{(product.price * 1.2).toLocaleString('en-IN')}</div>
-                    <div className={styles.productDiscount}>20% off</div>
-                  </div>
-                  <button className={styles.addToCartBtn}>Add to Cart</button>
+                <div className={styles.adFeature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>Free Shipping Always</span>
+                </div>
+                <div className={styles.adFeature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>Early Access to Sales</span>
+                </div>
+                <div className={styles.adFeature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>Priority Customer Support</span>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className={styles.viewAllContainer}>
-            <Link to="/products" className={styles.viewAllButton}>
-              View All Products
-            </Link>
+              <Link to="/register" className={styles.adButton}>
+                Join Now
+              </Link>
+            </div>
+            <div className={styles.adImage}>
+              <div className={styles.adPlaceholder}>
+                <span className={styles.adPlaceholderText}>Premium Membership</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

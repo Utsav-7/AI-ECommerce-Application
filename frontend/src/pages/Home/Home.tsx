@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar/Navbar';
 import Footer from '../../components/layout/Footer/Footer';
+import ProductCard from '../../components/product/ProductCard/ProductCard';
 import { authService } from '../../services/api/authService';
+import { productService } from '../../services/api/productService';
 import { getDashboardPathByUserInfo } from '../../utils/routeHelpers';
+import type { ProductPublic } from '../../types/product.types';
 import styles from './Home.module.css';
 
 // Import images
@@ -82,16 +85,27 @@ const Home: React.FC = () => {
     { name: 'Household Needs', image: householdCategory },
   ];
 
-  const products = [
-    { id: 1, name: 'Premium Headphones', description: 'High-quality wireless headphones with noise cancellation', price: 14999, image: product1 },
-    { id: 2, name: 'Smart Watch', description: 'Feature-rich smartwatch with health tracking', price: 18999, image: product2 },
-    { id: 3, name: 'Running Shoes', description: 'Comfortable athletic shoes for daily runs', price: 9999, image: product3 },
-    { id: 4, name: 'Sunglasses', description: 'Stylish UV protection sunglasses', price: 2999, image: product4 },
-    { id: 5, name: 'Wireless Earbuds', description: 'True wireless earbuds with long battery life', price: 4999, image: product1 },
-    { id: 6, name: 'Fitness Tracker', description: 'Advanced fitness tracking with heart rate monitor', price: 7999, image: product2 },
-    { id: 7, name: 'Backpack', description: 'Durable travel backpack with laptop compartment', price: 3499, image: product3 },
-    { id: 8, name: 'Water Bottle', description: 'Insulated stainless steel water bottle', price: 1999, image: product4 },
-  ];
+  // State for limited products
+  const [featuredProducts, setFeaturedProducts] = useState<ProductPublic[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
+  // Fetch limited products (8 products)
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const data = await productService.getPublicProducts();
+      // Get first 8 products (or less if available)
+      setFeaturedProducts(data.slice(0, 8));
+    } catch (err) {
+      console.error('Failed to fetch featured products:', err);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
 
   const testimonials = [
     {
