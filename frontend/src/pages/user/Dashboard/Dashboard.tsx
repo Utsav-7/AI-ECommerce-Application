@@ -27,18 +27,8 @@ const UserDashboard: React.FC = () => {
   const categoriesRef = useRef<HTMLDivElement>(null);
   const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
 
-  // State for products and categories
-  const [products, setProducts] = useState<ProductPublic[]>([]);
+  // State for categories
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filter states
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
-  const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc' | 'newest'>('newest');
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -70,25 +60,6 @@ const UserDashboard: React.FC = () => {
     };
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await productService.getPublicProducts();
-      setProducts(data);
-      
-      // Set max price from products
-      if (data.length > 0) {
-        const maxPrice = Math.max(...data.map(p => p.price));
-        setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch products');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchCategories = async () => {
     try {
       const data = await categoryService.getAll();
@@ -98,66 +69,10 @@ const UserDashboard: React.FC = () => {
     }
   };
 
-  // Fetch products and categories
+  // Fetch categories
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
   }, []);
-
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = [...products];
-
-    // Filter by category
-    if (selectedCategory !== null) {
-      filtered = filtered.filter(p => p.categoryId === selectedCategory);
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.categoryName.toLowerCase().includes(query)
-      );
-    }
-
-    // Filter by price range
-    filtered = filtered.filter(p => {
-      const price = p.discountPrice || p.price;
-      return price >= priceRange[0] && price <= priceRange[1];
-    });
-
-    // Sort products
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'price-asc':
-          return (a.discountPrice || a.price) - (b.discountPrice || b.price);
-        case 'price-desc':
-          return (b.discountPrice || b.price) - (a.discountPrice || a.price);
-        case 'newest':
-        default:
-          return 0; // Assuming products are already sorted by newest
-      }
-    });
-
-    return filtered;
-  }, [products, selectedCategory, searchQuery, priceRange, sortBy]);
-
-  const handleClearFilters = () => {
-    setSelectedCategory(null);
-    setSearchQuery('');
-    if (products.length > 0) {
-      const maxPrice = Math.max(...products.map(p => p.price));
-      setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
-    } else {
-      setPriceRange([0, 100000]);
-    }
-    setSortBy('newest');
-  };
 
   if (!userInfo) {
     return null;

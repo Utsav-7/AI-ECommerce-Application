@@ -11,6 +11,8 @@ public class UnitOfWork : IUnitOfWork
     private IDbContextTransaction? _transaction;
 
     private IUserRepository? _users;
+    private ICategoryRepository? _categories;
+    private IProductRepository? _products;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -23,6 +25,24 @@ public class UnitOfWork : IUnitOfWork
         {
             _users ??= new UserRepository(_context);
             return _users;
+        }
+    }
+
+    public ICategoryRepository Categories
+    {
+        get
+        {
+            _categories ??= new CategoryRepository(_context);
+            return _categories;
+        }
+    }
+
+    public IProductRepository Products
+    {
+        get
+        {
+            _products ??= new ProductRepository(_context);
+            return _products;
         }
     }
 

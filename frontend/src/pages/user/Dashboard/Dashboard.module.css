@@ -647,13 +647,25 @@
   }
 
   .categoriesSection,
-  .productsSection {
+  .saleSection,
+  .offersSection,
+  .advertisementSection {
     padding: 3rem 1rem;
   }
 
-  .productsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
+  .saleBanner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .adBanner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .adFeatures {
+    grid-template-columns: 1fr;
   }
 
   .container {
@@ -662,7 +674,19 @@
 }
 
 @media (max-width: 480px) {
-  .productsGrid {
+  .saleTitle {
+    font-size: 2rem;
+  }
+
+  .timerValue {
+    font-size: 2rem;
+  }
+
+  .adTitle {
+    font-size: 2rem;
+  }
+
+  .offersGrid {
     grid-template-columns: 1fr;
   }
 }

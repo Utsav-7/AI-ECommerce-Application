@@ -19,18 +19,13 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Description)
             .HasMaxLength(1000);
 
+        // ImageUrl can store Base64 encoded images, so we need unlimited length
         builder.Property(c => c.ImageUrl)
-            .HasMaxLength(500);
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(c => c.IsActive)
             .IsRequired()
             .HasDefaultValue(true);
-
-        // Self-referencing relationship for hierarchical categories
-        builder.HasOne(c => c.ParentCategory)
-            .WithMany(c => c.SubCategories)
-            .HasForeignKey(c => c.ParentCategoryId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         // Relationships
         builder.HasMany(c => c.Products)
@@ -39,4 +34,3 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
-

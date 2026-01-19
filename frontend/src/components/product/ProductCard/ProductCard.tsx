@@ -57,7 +57,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           className={styles.productImage}
           onError={(e) => {
             // Fallback to default image on error
-            e.currentTarget.src = '/src/assets/Products/product1.jpg';
+            const target = e.currentTarget;
+            if (!target.src.includes('product1.jpg')) {
+              target.src = '/src/assets/Products/product1.jpg';
+            }
           }}
         />
         {discountPercentage > 0 && (

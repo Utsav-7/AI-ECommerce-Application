@@ -42,6 +42,14 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasDefaultValue(true);
 
+        // Seller-specific fields
+        builder.Property(u => u.GstNumber)
+            .HasMaxLength(15); // GST number is 15 characters in India
+
+        builder.Property(u => u.IsApproved)
+            .IsRequired()
+            .HasDefaultValue(true);
+
         // Relationships
         builder.HasMany(u => u.Addresses)
             .WithOne(a => a.User)

@@ -6,6 +6,12 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.UnitOfWork;
 using ECommerce.API.Middleware;
+using ICategoryService = ECommerce.Application.Services.Interfaces.ICategoryService;
+using CategoryService = ECommerce.Application.Services.Implementations.CategoryService;
+using IUserService = ECommerce.Application.Services.Interfaces.IUserService;
+using UserService = ECommerce.Application.Services.Implementations.UserService;
+using IProductService = ECommerce.Application.Services.Interfaces.IProductService;
+using ProductService = ECommerce.Application.Services.Implementations.ProductService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -136,6 +142,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<JwtTokenHelper>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IEmailService, ECommerce.Infrastructure.Services.EmailService>();
 
 var app = builder.Build();

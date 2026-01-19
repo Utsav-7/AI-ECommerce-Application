@@ -31,9 +31,21 @@ public class AuthService : IAuthService
     {
         var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
 
-        if (user == null || !user.IsActive)
+        if (user == null)
         {
             throw new UnauthorizedException("Invalid email or password");
+        }
+
+        // Check if user is a seller pending approval
+        if (user.Role == UserRole.Seller && !user.IsApproved)
+        {
+            throw new UnauthorizedException("Your seller account is pending admin approval. Please wait for approval to login.");
+        }
+
+        // Check if account is active
+        if (!user.IsActive)
+        {
+            throw new UnauthorizedException("Your account has been deactivated. Please contact support.");
         }
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
@@ -69,11 +81,26 @@ public class AuthService : IAuthService
             throw new BadRequestException("Email already exists");
         }
 
+        // Determine the role (only User or Seller allowed, default to User)
+        var role = UserRole.User;
+        var isSeller = !string.IsNullOrWhiteSpace(request.Role) && 
+                       request.Role.Equals("Seller", StringComparison.OrdinalIgnoreCase);
+        
+        if (isSeller)
+        {
+            role = UserRole.Seller;
+            
+            // Validate GST number for sellers
+            if (string.IsNullOrWhiteSpace(request.GstNumber))
+            {
+                throw new BadRequestException("GST number is required for seller registration");
+            }
+        }
+
         // Hash password
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         // Create user
-        // Force role to User for all new registrations (security: prevent role escalation)
         var user = new Core.Entities.User
         {
             FirstName = request.FirstName.Trim(),
@@ -81,19 +108,40 @@ public class AuthService : IAuthService
             Email = request.Email.ToLower(),
             PasswordHash = passwordHash,
             PhoneNumber = request.PhoneNumber?.Trim(),
-            Role = UserRole.User, // Always set to User for new registrations (default role)
-            IsActive = true,
+            Role = role,
+            GstNumber = isSeller ? request.GstNumber?.Trim().ToUpper() : null,
+            IsActive = isSeller ? false : true, // Sellers need admin approval
+            IsApproved = isSeller ? false : true, // Sellers need admin approval
             CreatedAt = DateTime.UtcNow
         };
 
         await _unitOfWork.Users.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
+        // Send welcome email
+        try
+        {
+            var userName = $"{user.FirstName} {user.LastName}";
+            var roleText = isSeller ? "Seller" : "User";
+            await _emailService.SendWelcomeEmailAsync(user.Email, userName, roleText);
+            _logger.LogInformation("Welcome email sent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send welcome email to {Email}", user.Email);
+            // Don't fail registration if email fails
+        }
+
+        // Different message for sellers
+        var message = isSeller 
+            ? "Registration successful. Your account is pending admin approval." 
+            : "Registration successful";
+
         return new RegisterResponse
         {
             UserId = user.Id,
             Email = user.Email,
-            Message = "Registration successful"
+            Message = message
         };
     }
 

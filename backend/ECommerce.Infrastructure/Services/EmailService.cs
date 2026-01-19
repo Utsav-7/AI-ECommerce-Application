@@ -151,5 +151,121 @@ public class EmailService : IEmailService
 
         await SendEmailAsync(to, subject, body);
     }
+
+    public async Task SendWelcomeEmailAsync(string to, string userName, string role)
+    {
+        var subject = "Welcome to ECommerce - Registration Successful";
+        
+        var roleSpecificMessage = role.Equals("Seller", StringComparison.OrdinalIgnoreCase)
+            ? "<p><strong>Important:</strong> Your seller account is pending approval from our admin team. You will receive another email once your account has been approved and activated.</p>"
+            : "<p>You can now start shopping and exploring our wide range of products.</p>";
+
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #667eea;'>Welcome to ECommerce!</h2>
+                    <p>Dear {userName},</p>
+                    <p>Thank you for registering with ECommerce. Your account has been successfully created.</p>
+                    <div style='background-color: #f7fafc; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+                        <p><strong>Account Type:</strong> {role}</p>
+                        <p><strong>Email:</strong> {to}</p>
+                        <p><strong>Registration Date:</strong> {TimeZoneHelper.FormatIstDateTime(DateTime.UtcNow)}</p>
+                    </div>
+                    {roleSpecificMessage}
+                    <p>If you have any questions, feel free to contact our support team.</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
+
+    public async Task SendSellerApprovalEmailAsync(string to, string userName)
+    {
+        var subject = "Congratulations! Your Seller Account Has Been Approved - ECommerce";
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #28a745;'>🎉 Your Seller Account Has Been Approved!</h2>
+                    <p>Dear {userName},</p>
+                    <p>Great news! Your seller account on ECommerce has been reviewed and approved by our admin team.</p>
+                    <div style='background-color: #d4edda; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #c3e6cb;'>
+                        <p style='margin: 0; color: #155724;'><strong>✓ Account Status:</strong> Active</p>
+                        <p style='margin: 10px 0 0 0; color: #155724;'><strong>✓ Approval Date:</strong> {TimeZoneHelper.FormatIstDateTime(DateTime.UtcNow)}</p>
+                    </div>
+                    <p>You can now:</p>
+                    <ul>
+                        <li>Log in to your seller dashboard</li>
+                        <li>Add products to your store</li>
+                        <li>Manage your inventory</li>
+                        <li>Start receiving orders</li>
+                    </ul>
+                    <p>We're excited to have you as a seller on our platform!</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
+
+    public async Task SendSellerRejectionEmailAsync(string to, string userName, string? reason)
+    {
+        var reasonText = string.IsNullOrWhiteSpace(reason) 
+            ? "Your application did not meet our seller requirements at this time."
+            : reason;
+
+        var subject = "Seller Account Application Update - ECommerce";
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #dc3545;'>Seller Account Application Update</h2>
+                    <p>Dear {userName},</p>
+                    <p>Thank you for your interest in becoming a seller on ECommerce.</p>
+                    <p>After reviewing your application, we regret to inform you that your seller account request has not been approved at this time.</p>
+                    <div style='background-color: #f8d7da; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #f5c6cb;'>
+                        <p style='margin: 0; color: #721c24;'><strong>Reason:</strong> {reasonText}</p>
+                    </div>
+                    <p>If you believe this decision was made in error or if you have additional documentation to support your application, please contact our support team.</p>
+                    <p>You may also reapply after addressing the concerns mentioned above.</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
+
+    public async Task SendAccountStatusChangeEmailAsync(string to, string userName, bool isActive)
+    {
+        var statusText = isActive ? "Activated" : "Deactivated";
+        var statusColor = isActive ? "#28a745" : "#dc3545";
+        var subject = $"Account {statusText} - ECommerce";
+
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: {statusColor};'>Account {statusText}</h2>
+                    <p>Dear {userName},</p>
+                    <p>This email is to inform you that your ECommerce account has been <strong>{statusText.ToLower()}</strong>.</p>
+                    <div style='background-color: #f7fafc; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+                        <p><strong>Account Status:</strong> {statusText}</p>
+                        <p><strong>Date:</strong> {TimeZoneHelper.FormatIstDateTime(DateTime.UtcNow)}</p>
+                    </div>
+                    {(isActive 
+                        ? "<p>You can now log in and access all features of your account.</p>" 
+                        : "<p>If you believe this was done in error, please contact our support team immediately.</p>")}
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
 }
 

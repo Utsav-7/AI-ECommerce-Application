@@ -8,7 +8,7 @@
 }
 
 .title {
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.5rem 0;
   font-size: 2rem;
   font-weight: 700;
   color: #1a202c;
@@ -17,6 +17,65 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Toggle Container */
+.toggleContainer {
+  margin-bottom: 1.5rem;
+}
+
+.toggleWrapper {
+  display: flex;
+  background: #f7fafc;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.toggleButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #4a5568;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background: #e2e8f0;
+}
+
+.toggleActive {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.toggleActive:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.toggleIcon {
+  font-size: 1.1rem;
+}
+
+.sellerNote {
+  margin: 0.75rem 0 0 0;
+  padding: 0.5rem 0.75rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 .form {
@@ -53,6 +112,18 @@
   color: #999;
   font-weight: normal;
   font-size: 0.85rem;
+}
+
+.required {
+  color: #dc3545;
+  font-weight: normal;
+}
+
+.hint {
+  display: block;
+  margin-top: 0.25rem;
+  color: #718096;
+  font-size: 0.8rem;
 }
 
 .input {

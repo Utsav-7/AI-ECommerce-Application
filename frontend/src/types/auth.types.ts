@@ -13,6 +13,8 @@ export interface UserInfo {
   email: string;
   role: UserRole;
   isActive: boolean;
+  isApproved?: boolean;
+  gstNumber?: string;
 }
 
 export interface LoginRequest {
@@ -27,7 +29,8 @@ export interface RegisterRequest {
   password: string;
   confirmPassword: string;
   phoneNumber?: string;
-  // role is not sent - backend sets it to User by default
+  role?: 'User' | 'Seller';
+  gstNumber?: string;
 }
 
 export interface ResetPasswordRequest {
