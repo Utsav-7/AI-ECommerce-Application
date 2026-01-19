@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using ECommerce.Core.Enums;
 
 namespace ECommerce.Core.DTOs.Request.Auth;
 
@@ -28,8 +27,13 @@ public class RegisterRequest
     [Phone(ErrorMessage = "Invalid phone number format")]
     public string? PhoneNumber { get; set; }
 
-    // Role is not sent from frontend - backend will always set it to User
-    // Made nullable to avoid deserialization issues when not provided
-    public UserRole? Role { get; set; }
+    // Role selection: "User" or "Seller" as string (Admin cannot be selected during registration)
+    public string? Role { get; set; }
+
+    // Seller-specific fields
+    [StringLength(15, MinimumLength = 15, ErrorMessage = "GST number must be exactly 15 characters")]
+    [RegularExpression(@"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", 
+        ErrorMessage = "Invalid GST number format")]
+    public string? GstNumber { get; set; }
 }
 

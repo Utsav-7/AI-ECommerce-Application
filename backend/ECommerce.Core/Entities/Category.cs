@@ -9,12 +9,6 @@ public class Category : BaseEntity
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; } = true;
     
-    // Hierarchical Category Support
-    public int? ParentCategoryId { get; set; }
-    public Category? ParentCategory { get; set; }
-    public ICollection<Category> SubCategories { get; set; } = new List<Category>();
-
     // Navigation Properties
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }
-

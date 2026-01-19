@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { authService } from '../../../services/api/authService';
+import { toastService } from '../../../services/toast/toastService';
 import type { RegisterRequest } from '../../../types/auth.types';
 import { validators } from '../../../utils/validators';
 import styles from './SignUp.module.css';
@@ -9,22 +10,30 @@ interface SignUpProps {
   onSwitchToLogin?: () => void;
 }
 
+type RegistrationType = 'User' | 'Seller';
+
+interface FormData extends RegisterRequest {
+  gstNumber: string;
+}
+
 const SignUp: React.FC<SignUpProps> = ({ onSuccess, onSwitchToLogin }) => {
-  const [formData, setFormData] = useState<RegisterRequest>({
+  const [registrationType, setRegistrationType] = useState<RegistrationType>('User');
+  const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
     phoneNumber: '',
+    gstNumber: '',
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof RegisterRequest, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  const isSeller = registrationType === 'Seller';
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof RegisterRequest, string>> = {};
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     const firstNameError = validators.required(formData.firstName, 'First name');
     if (firstNameError) {
@@ -61,32 +70,58 @@ const SignUp: React.FC<SignUpProps> = ({ onSuccess, onSwitchToLogin }) => {
       }
     }
 
+    // GST validation for sellers
+    if (isSeller) {
+      const gstError = validators.gstNumber(formData.gstNumber, true);
+      if (gstError) {
+        newErrors.gstNumber = gstError;
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
 
     if (!validate()) {
+      toastService.error('Please fix the errors in the form');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Don't send role field - backend will set it to User by default
-      // This avoids enum conversion issues and ensures security
-      await authService.register(formData);
-      setSuccessMessage('Registration successful! You can now login.');
+      const requestData: RegisterRequest = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        phoneNumber: formData.phoneNumber || undefined,
+        role: registrationType,
+        gstNumber: isSeller ? formData.gstNumber : undefined,
+      };
+
+      const response = await authService.register(requestData);
+      
+      if (isSeller) {
+        toastService.success(
+          'Registration successful! Your seller account is pending admin approval.',
+          5000
+        );
+      } else {
+        toastService.success('Registration successful! You can now login.');
+      }
+
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
         }, 1500);
       }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Registration failed');
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      toastService.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -95,20 +130,51 @@ const SignUp: React.FC<SignUpProps> = ({ onSuccess, onSwitchToLogin }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof RegisterRequest]) {
+    if (errors[name as keyof FormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
-    setErrorMessage('');
-    setSuccessMessage('');
+  };
+
+  const handleRegistrationTypeChange = (type: RegistrationType) => {
+    setRegistrationType(type);
+    // Clear GST error when switching to User
+    if (type === 'User') {
+      setErrors((prev) => ({ ...prev, gstNumber: undefined }));
+    }
   };
 
   return (
     <div className={styles.signUpContainer}>
       <h2 className={styles.title}>Sign Up</h2>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
-        {successMessage && <div className={styles.successMessage}>{successMessage}</div>}
+      
+      {/* Registration Type Toggle */}
+      <div className={styles.toggleContainer}>
+        <div className={styles.toggleWrapper}>
+          <button
+            type="button"
+            className={`${styles.toggleButton} ${!isSeller ? styles.toggleActive : ''}`}
+            onClick={() => handleRegistrationTypeChange('User')}
+          >
+            <span className={styles.toggleIcon}>👤</span>
+            Customer
+          </button>
+          <button
+            type="button"
+            className={`${styles.toggleButton} ${isSeller ? styles.toggleActive : ''}`}
+            onClick={() => handleRegistrationTypeChange('Seller')}
+          >
+            <span className={styles.toggleIcon}>🏪</span>
+            Seller
+          </button>
+        </div>
+        {isSeller && (
+          <p className={styles.sellerNote}>
+            Seller accounts require admin approval before activation
+          </p>
+        )}
+      </div>
 
+      <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label htmlFor="firstName" className={styles.label}>
@@ -175,6 +241,28 @@ const SignUp: React.FC<SignUpProps> = ({ onSuccess, onSwitchToLogin }) => {
           {errors.phoneNumber && <span className={styles.error}>{errors.phoneNumber}</span>}
         </div>
 
+        {/* GST Number field for Sellers */}
+        {isSeller && (
+          <div className={styles.formGroup}>
+            <label htmlFor="gstNumber" className={styles.label}>
+              GST Number <span className={styles.required}>*</span>
+            </label>
+            <input
+              type="text"
+              id="gstNumber"
+              name="gstNumber"
+              value={formData.gstNumber}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.gstNumber ? styles.inputError : ''}`}
+              placeholder="e.g., 22AAAAA0000A1Z5"
+              maxLength={15}
+              style={{ textTransform: 'uppercase' }}
+            />
+            {errors.gstNumber && <span className={styles.error}>{errors.gstNumber}</span>}
+            <span className={styles.hint}>15-character GST identification number</span>
+          </div>
+        )}
+
         <div className={styles.formGroup}>
           <label htmlFor="password" className={styles.label}>
             Password
@@ -214,7 +302,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSuccess, onSwitchToLogin }) => {
           disabled={isLoading}
           className={`${styles.button} ${isLoading ? styles.buttonDisabled : ''}`}
         >
-          {isLoading ? 'Registering...' : 'Sign Up'}
+          {isLoading ? 'Registering...' : isSeller ? 'Register as Seller' : 'Sign Up'}
         </button>
 
         {onSwitchToLogin && (
@@ -235,4 +323,3 @@ const SignUp: React.FC<SignUpProps> = ({ onSuccess, onSwitchToLogin }) => {
 };
 
 export default SignUp;
-

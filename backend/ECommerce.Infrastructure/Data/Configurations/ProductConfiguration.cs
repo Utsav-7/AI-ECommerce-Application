@@ -27,11 +27,13 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.DiscountPrice)
             .HasColumnType("decimal(18,2)");
 
+        // ImageUrl can store Base64 encoded images, so we need unlimited length
         builder.Property(p => p.ImageUrl)
-            .HasMaxLength(500);
+            .HasColumnType("nvarchar(max)");
 
+        // ImageUrls stores JSON array of Base64 encoded images
         builder.Property(p => p.ImageUrls)
-            .HasMaxLength(2000); // JSON array
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(p => p.IsActive)
             .IsRequired()

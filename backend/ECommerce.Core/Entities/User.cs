@@ -14,6 +14,10 @@ public class User : BaseEntity
     public bool IsActive { get; set; } = true;
     public string? ResetPasswordOtp { get; set; }
     public DateTime? ResetPasswordOtpExpiry { get; set; }
+    
+    // Seller-specific fields
+    public string? GstNumber { get; set; }
+    public bool IsApproved { get; set; } = true; // For sellers: requires admin approval
 
     // Navigation Properties
     public ICollection<Address> Addresses { get; set; } = new List<Address>();

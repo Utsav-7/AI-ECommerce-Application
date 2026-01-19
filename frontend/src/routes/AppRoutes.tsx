@@ -1,9 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../pages/Home/Home';
+import Products from '../pages/Products/Products';
 import LoginPage from '../pages/Login/LoginPage';
 import RegisterPage from '../pages/Register/RegisterPage';
 import UserDashboard from '../pages/user/Dashboard/Dashboard';
 import AdminDashboard from '../pages/admin/Dashboard/Dashboard';
+import AdminCategories from '../pages/admin/Categories/Categories';
+import AdminUsers from '../pages/admin/Users/Users';
+import AdminProducts from '../pages/admin/Products/Products';
 import SellerDashboard from '../pages/seller/Dashboard/Dashboard';
 import ForgotPasswordPage from '../pages/ForgotPassword/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPassword/ResetPasswordPage';
@@ -14,6 +18,9 @@ const AppRoutes: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        
+        {/* Public Routes */}
+        <Route path="/products" element={<Products />} />
         
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -39,10 +46,42 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/admin/categories"
+          element={
+            <PrivateRoute>
+              <AdminCategories />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute>
+              <AdminUsers />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <PrivateRoute>
+              <AdminProducts />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/seller/dashboard"
           element={
             <PrivateRoute>
               <SellerDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/seller/products"
+          element={
+            <PrivateRoute>
+              <AdminProducts />
             </PrivateRoute>
           }
         />

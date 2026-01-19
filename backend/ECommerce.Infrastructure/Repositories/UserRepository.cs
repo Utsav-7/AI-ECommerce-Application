@@ -31,8 +31,39 @@ public class UserRepository : Repository<User>, IUserRepository
     public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
     {
         return await _dbSet
-            .Where(u => u.Role == role)
+            .Where(u => u.Role == role && !u.IsDeleted)
+            .OrderByDescending(u => u.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        return await _dbSet
+            .Where(u => !u.IsDeleted)
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<User>> GetPendingSellersAsync()
+    {
+        return await _dbSet
+            .Where(u => u.Role == UserRole.Seller && !u.IsApproved && !u.IsDeleted)
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetUserCountByRoleAsync(UserRole role)
+    {
+        return await _dbSet
+            .Where(u => u.Role == role && !u.IsDeleted)
+            .CountAsync();
+    }
+
+    public async Task<int> GetPendingSellersCountAsync()
+    {
+        return await _dbSet
+            .Where(u => u.Role == UserRole.Seller && !u.IsApproved && !u.IsDeleted)
+            .CountAsync();
     }
 }
 

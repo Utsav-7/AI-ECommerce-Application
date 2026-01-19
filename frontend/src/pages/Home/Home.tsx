@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar/Navbar';
 import Footer from '../../components/layout/Footer/Footer';
+import ProductCard from '../../components/product/ProductCard/ProductCard';
 import { authService } from '../../services/api/authService';
+import { productService } from '../../services/api/productService';
 import { getDashboardPathByUserInfo } from '../../utils/routeHelpers';
+import type { ProductPublic } from '../../types/product.types';
 import styles from './Home.module.css';
 
 // Import images
@@ -19,10 +22,6 @@ import groceryCategory from '../../assets/Categories/Grocery & Staples.png';
 import meatCategory from '../../assets/Categories/Meat & Seafoods.png';
 import healthcareCategory from '../../assets/Categories/Healthcare.png';
 import householdCategory from '../../assets/Categories/Household needs.png';
-import product1 from '../../assets/Products/product1.jpg';
-import product2 from '../../assets/Products/product2.jpg';
-import product3 from '../../assets/Products/product3.jpg';
-import product4 from '../../assets/Products/product4.jpg';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -82,16 +81,27 @@ const Home: React.FC = () => {
     { name: 'Household Needs', image: householdCategory },
   ];
 
-  const products = [
-    { id: 1, name: 'Premium Headphones', description: 'High-quality wireless headphones with noise cancellation', price: 14999, image: product1 },
-    { id: 2, name: 'Smart Watch', description: 'Feature-rich smartwatch with health tracking', price: 18999, image: product2 },
-    { id: 3, name: 'Running Shoes', description: 'Comfortable athletic shoes for daily runs', price: 9999, image: product3 },
-    { id: 4, name: 'Sunglasses', description: 'Stylish UV protection sunglasses', price: 2999, image: product4 },
-    { id: 5, name: 'Wireless Earbuds', description: 'True wireless earbuds with long battery life', price: 4999, image: product1 },
-    { id: 6, name: 'Fitness Tracker', description: 'Advanced fitness tracking with heart rate monitor', price: 7999, image: product2 },
-    { id: 7, name: 'Backpack', description: 'Durable travel backpack with laptop compartment', price: 3499, image: product3 },
-    { id: 8, name: 'Water Bottle', description: 'Insulated stainless steel water bottle', price: 1999, image: product4 },
-  ];
+  // State for limited products
+  const [featuredProducts, setFeaturedProducts] = useState<ProductPublic[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
+  // Fetch limited products (8 products)
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const data = await productService.getPublicProducts();
+      // Get first 8 products (or less if available)
+      setFeaturedProducts(data.slice(0, 8));
+    } catch (err) {
+      console.error('Failed to fetch featured products:', err);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
 
   const testimonials = [
     {
@@ -317,34 +327,65 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Offers Section */}
+      <section className={styles.offersSection}>
+        <div className={styles.container}>
+          <h2 className={styles.sectionTitle}>Special Offers</h2>
+          <div className={styles.offersGrid}>
+            <div className={styles.offerCard}>
+              <div className={styles.offerBadge}>50% OFF</div>
+              <h3 className={styles.offerTitle}>Flash Sale</h3>
+              <p className={styles.offerDescription}>Get up to 50% off on selected items. Limited time only!</p>
+              <Link to="/products" className={styles.offerButton}>Shop Now</Link>
+            </div>
+            <div className={styles.offerCard}>
+              <div className={styles.offerBadge}>FREE SHIPPING</div>
+              <h3 className={styles.offerTitle}>Free Delivery</h3>
+              <p className={styles.offerDescription}>Free shipping on orders above ₹500. Shop now and save!</p>
+              <Link to="/products" className={styles.offerButton}>Shop Now</Link>
+            </div>
+            <div className={styles.offerCard}>
+              <div className={styles.offerBadge}>NEW ARRIVALS</div>
+              <h3 className={styles.offerTitle}>Latest Products</h3>
+              <p className={styles.offerDescription}>Check out our newest additions. Fresh products every week!</p>
+              <Link to="/products" className={styles.offerButton}>Shop Now</Link>
+            </div>
+            <div className={styles.offerCard}>
+              <div className={styles.offerBadge}>BUY 2 GET 1</div>
+              <h3 className={styles.offerTitle}>Buy More, Save More</h3>
+              <p className={styles.offerDescription}>Buy 2 items and get 1 free on selected categories!</p>
+              <Link to="/products" className={styles.offerButton}>Shop Now</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Products Showcase */}
       <section className={styles.productsSection}>
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>Featured Products</h2>
-          <div className={styles.productsGrid}>
-            {products.map((product) => (
-              <div key={product.id} className={styles.productCard}>
-                <div className={styles.productImage}>
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className={styles.productImageImg}
-                  />
-                </div>
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productName}>{product.name}</h3>
-                  <p className={styles.productDescription}>{product.description}</p>
-                  <div className={styles.productPrice}>₹{product.price.toLocaleString('en-IN')}</div>
-                  <button className={styles.addToCartBtn}>Add to Cart</button>
-                </div>
+          {productsLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loader}>Loading products...</div>
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className={styles.emptyContainer}>
+              <p className={styles.emptyMessage}>No products available at the moment.</p>
+            </div>
+          ) : (
+            <>
+              <div className={styles.productsGrid}>
+                {featuredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
               </div>
-            ))}
-          </div>
-          <div className={styles.viewAllContainer}>
-            <Link to="/products" className={styles.viewAllButton}>
-              View All Products
-            </Link>
-          </div>
+              <div className={styles.viewAllContainer}>
+                <Link to="/products" className={styles.viewAllButton}>
+                  View All Products
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
