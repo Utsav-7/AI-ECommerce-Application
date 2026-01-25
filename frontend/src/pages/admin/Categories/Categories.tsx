@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { categoryService } from '../../../services/api/categoryService';
+import { toastService } from '../../../services/toast/toastService';
 import { UserRoleValues } from '../../../types/auth.types';
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../../../types/category.types';
 import styles from './Categories.module.css';
@@ -46,7 +47,6 @@ const AdminCategories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,6 +86,7 @@ const AdminCategories: React.FC = () => {
 
   const handleLogout = () => {
     authService.logout();
+    toastService.success('Logged out successfully');
     navigate('/');
   };
 
@@ -240,7 +241,7 @@ const AdminCategories: React.FC = () => {
           isActive: formData.isActive,
         };
         await categoryService.update(editingCategory.id, updateData);
-        setSuccessMessage('Category updated successfully!');
+        toastService.success('Category updated successfully!');
       } else {
         // Create new category
         const createData: CreateCategoryRequest = {
@@ -250,16 +251,15 @@ const AdminCategories: React.FC = () => {
           isActive: formData.isActive,
         };
         await categoryService.create(createData);
-        setSuccessMessage('Category created successfully!');
+        toastService.success('Category created successfully!');
       }
 
       closeModal();
       fetchCategories();
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Operation failed');
+      const errorMsg = err instanceof Error ? err.message : 'Operation failed';
+      setFormError(errorMsg);
+      toastService.error(errorMsg);
     } finally {
       setFormLoading(false);
     }
@@ -271,14 +271,13 @@ const AdminCategories: React.FC = () => {
     setFormLoading(true);
     try {
       await categoryService.delete(deletingCategory.id);
-      setSuccessMessage('Category deleted successfully!');
+      toastService.success('Category deleted successfully!');
       closeDeleteModal();
       fetchCategories();
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete category');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete category';
+      setError(errorMsg);
+      toastService.error(errorMsg);
       closeDeleteModal();
     } finally {
       setFormLoading(false);
@@ -350,14 +349,6 @@ const AdminCategories: React.FC = () => {
         </header>
 
         <div className={styles.content}>
-          {/* Success Message */}
-          {successMessage && (
-            <div className={styles.successAlert}>
-              <span className={styles.alertIcon}>✓</span>
-              {successMessage}
-            </div>
-          )}
-
           {/* Error Message */}
           {error && (
             <div className={styles.errorAlert}>

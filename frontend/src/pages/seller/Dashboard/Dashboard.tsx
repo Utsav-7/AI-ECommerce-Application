@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
+import { toastService } from '../../../services/toast/toastService';
 import { UserRoleValues } from '../../../types/auth.types';
 import styles from './Dashboard.module.css';
 
@@ -32,6 +33,7 @@ const SellerDashboard: React.FC = () => {
 
   const handleLogout = () => {
     authService.logout();
+    toastService.success('Logged out successfully');
     navigate('/');
   };
 

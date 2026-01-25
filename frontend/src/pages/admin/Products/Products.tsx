@@ -112,6 +112,7 @@ const AdminProducts: React.FC = () => {
 
   const handleLogout = () => {
     authService.logout();
+    toastService.success('Logged out successfully');
     navigate('/');
   };
 

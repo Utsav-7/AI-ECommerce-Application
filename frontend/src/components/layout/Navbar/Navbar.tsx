@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
+import { toastService } from '../../../services/toast/toastService';
 import { getDashboardPathByUserInfo } from '../../../utils/routeHelpers';
 import styles from './Navbar.module.css';
 
@@ -30,6 +31,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     authService.logout();
+    toastService.success('Logged out successfully');
     navigate('/');
     setIsMenuOpen(false);
     setIsUserMenuOpen(false);

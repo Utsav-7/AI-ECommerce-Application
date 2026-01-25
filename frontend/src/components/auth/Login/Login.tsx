@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
+import { toastService } from '../../../services/toast/toastService';
 import type { LoginRequest } from '../../../types/auth.types';
 import { validators } from '../../../utils/validators';
 import Modal from '../../common/Modal/Modal';
@@ -54,12 +55,15 @@ const Login: React.FC<LoginProps> = ({ onSuccess, onSwitchToRegister }) => {
     setIsLoading(true);
     try {
       const loginResponse = await authService.login(formData);
+      toastService.success('Login successful! Welcome back.');
       if (onSuccess) {
         // Pass userInfo to onSuccess callback for immediate redirect
         onSuccess(loginResponse.userInfo);
       }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Login failed');
+      const errorMsg = error instanceof Error ? error.message : 'Login failed';
+      setErrorMessage(errorMsg);
+      toastService.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
