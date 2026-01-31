@@ -12,5 +12,7 @@ public interface IUserRepository : IRepository<User>
     Task<IEnumerable<User>> GetPendingSellersAsync();
     Task<int> GetUserCountByRoleAsync(UserRole role);
     Task<int> GetPendingSellersCountAsync();
+    Task<(List<User> Items, int TotalCount)> GetAllUsersPagedAsync(string? search, string? role, bool? isActive, int page, int pageSize);
+    Task<(List<User> Items, int TotalCount)> GetPendingSellersPagedAsync(string? search, int page, int pageSize);
 }
 

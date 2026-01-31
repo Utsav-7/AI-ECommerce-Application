@@ -14,4 +14,6 @@ public interface IProductRepository : IRepository<Product>
     Task<int> GetProductCountBySellerAsync(int sellerId);
     Task<int> GetProductCountByCategoryAsync(int categoryId);
     Task<bool> ProductExistsAsync(int id);
+    Task<(List<Product> Items, int TotalCount)> GetAllWithDetailsPagedAsync(string? search, int? categoryId, bool? isActive, bool? isVisible, int page, int pageSize);
+    Task<(List<Product> Items, int TotalCount)> GetBySellerIdPagedAsync(int sellerId, string? search, int? categoryId, bool? isActive, int page, int pageSize);
 }

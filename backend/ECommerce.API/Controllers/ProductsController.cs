@@ -179,6 +179,42 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Get all products with server-side pagination and search (Admin only)
+    /// </summary>
+    [HttpGet("paged")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<ProductListResponse>>>> GetAllProductsPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] int? categoryId = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool? isVisible = null)
+    {
+        if (!IsAdmin())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<PagedResponse<ProductListResponse>>.ErrorResponse("Access denied. Admin privileges required."));
+        }
+
+        try
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var result = await _productService.GetAllProductsPagedAsync(search, categoryId, isActive, isVisible, page, pageSize);
+            return Ok(ApiResponse<PagedResponse<ProductListResponse>>.SuccessResponse(result, "Products retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving all products");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<PagedResponse<ProductListResponse>>.ErrorResponse("An error occurred while retrieving products"));
+        }
+    }
+
+    /// <summary>
     /// Get product by ID (Admin/Seller)
     /// </summary>
     [HttpGet("{id:int}")]
@@ -245,6 +281,42 @@ public class ProductsController : ControllerBase
             _logger.LogError(ex, "Error retrieving products for seller");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 ApiResponse<IEnumerable<ProductListResponse>>.ErrorResponse("An error occurred while retrieving products"));
+        }
+    }
+
+    /// <summary>
+    /// Get current seller's products with server-side pagination and search
+    /// </summary>
+    [HttpGet("my-products/paged")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<ProductListResponse>>>> GetMyProductsPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] int? categoryId = null,
+        [FromQuery] bool? isActive = null)
+    {
+        if (!IsAdminOrSeller())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<PagedResponse<ProductListResponse>>.ErrorResponse("Access denied."));
+        }
+
+        try
+        {
+            var sellerId = GetCurrentUserId();
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var result = await _productService.GetProductsBySellerPagedAsync(sellerId, search, categoryId, isActive, page, pageSize);
+            return Ok(ApiResponse<PagedResponse<ProductListResponse>>.SuccessResponse(result, "Products retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving products for seller");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<PagedResponse<ProductListResponse>>.ErrorResponse("An error occurred while retrieving products"));
         }
     }
 

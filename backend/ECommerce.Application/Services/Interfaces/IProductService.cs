@@ -1,4 +1,5 @@
 using ECommerce.Core.DTOs.Request.Product;
+using ECommerce.Core.DTOs.Response.Common;
 using ECommerce.Core.DTOs.Response.Product;
 
 namespace ECommerce.Application.Services.Interfaces;
@@ -15,6 +16,8 @@ public interface IProductService
     Task<IEnumerable<ProductListResponse>> GetAllProductsAsync();
     Task<ProductResponse> GetByIdAsync(int id);
     Task<IEnumerable<ProductListResponse>> GetProductsBySellerAsync(int sellerId);
+    Task<PagedResponse<ProductListResponse>> GetAllProductsPagedAsync(string? search, int? categoryId, bool? isActive, bool? isVisible, int page, int pageSize);
+    Task<PagedResponse<ProductListResponse>> GetProductsBySellerPagedAsync(int sellerId, string? search, int? categoryId, bool? isActive, int page, int pageSize);
     
     // Create (Admin or Seller)
     Task<ProductResponse> CreateProductAsync(CreateProductRequest request, int sellerId);

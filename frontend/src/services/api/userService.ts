@@ -1,8 +1,22 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../../utils/constants';
 import type { User, UserListItem, PendingSeller, UpdateUserRequest, DashboardStats } from '../../types/user.types';
-import type { ApiResponse } from '../../types/common.types';
+import type { ApiResponse, PagedResponse } from '../../types/common.types';
 import { handleApiError } from '../../utils/errorHandler';
+
+export interface UsersPagedParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  role?: string;
+  isActive?: boolean;
+}
+
+export interface PendingSellersPagedParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
 
 export const userService = {
   async getAll(): Promise<UserListItem[]> {
@@ -57,6 +71,42 @@ export const userService = {
     try {
       const response = await apiClient.get<ApiResponse<PendingSeller[]>>(
         API_ENDPOINTS.USERS.GET_PENDING_SELLERS
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || 'Failed to fetch pending sellers');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getPaged(params: UsersPagedParams = {}): Promise<PagedResponse<UserListItem>> {
+    try {
+      const { page = 1, pageSize = 10, search, role, isActive } = params;
+      const response = await apiClient.get<ApiResponse<PagedResponse<UserListItem>>>(
+        API_ENDPOINTS.USERS.GET_PAGED,
+        { params: { page, pageSize, search: search || undefined, role: role || undefined, isActive } }
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || 'Failed to fetch users');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getPendingSellersPaged(params: PendingSellersPagedParams = {}): Promise<PagedResponse<PendingSeller>> {
+    try {
+      const { page = 1, pageSize = 10, search } = params;
+      const response = await apiClient.get<ApiResponse<PagedResponse<PendingSeller>>>(
+        API_ENDPOINTS.USERS.GET_PENDING_SELLERS_PAGED,
+        { params: { page, pageSize, search: search || undefined } }
       );
 
       if (response.data.success && response.data.data) {

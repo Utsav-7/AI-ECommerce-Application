@@ -48,6 +48,34 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
+    /// Get categories with server-side pagination and search
+    /// </summary>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CategoryResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CategoryResponse>>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CategoryResponse>>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<CategoryResponse>>>> GetAllPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] bool? isActive = null)
+    {
+        try
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var result = await _categoryService.GetAllPagedAsync(search, isActive, page, pageSize);
+            return Ok(ApiResponse<PagedResponse<CategoryResponse>>.SuccessResponse(result, "Categories retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving categories");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<PagedResponse<CategoryResponse>>.ErrorResponse("An error occurred while retrieving categories"));
+        }
+    }
+
+    /// <summary>
     /// Get category by ID
     /// </summary>
     /// <param name="id">Category ID</param>

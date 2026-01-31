@@ -104,4 +104,67 @@ public class ProductRepository : Repository<Product>, IProductRepository
         return await _dbSet
             .AnyAsync(p => p.Id == id && !p.IsDeleted);
     }
+
+    public async Task<(List<Product> Items, int TotalCount)> GetAllWithDetailsPagedAsync(string? search, int? categoryId, bool? isActive, bool? isVisible, int page, int pageSize)
+    {
+        var query = _dbSet
+            .Include(p => p.Category)
+            .Include(p => p.Seller)
+            .Where(p => !p.IsDeleted);
+
+        if (categoryId.HasValue)
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        if (isActive.HasValue)
+            query = query.Where(p => p.IsActive == isActive.Value);
+        if (isVisible.HasValue)
+            query = query.Where(p => p.IsVisible == isVisible.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(term) ||
+                (p.Description != null && p.Description.ToLower().Contains(term)) ||
+                (p.Category != null && p.Category.Name.ToLower().Contains(term)) ||
+                (p.Seller != null && (p.Seller.FirstName + " " + p.Seller.LastName).ToLower().Contains(term)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (items, totalCount);
+    }
+
+    public async Task<(List<Product> Items, int TotalCount)> GetBySellerIdPagedAsync(int sellerId, string? search, int? categoryId, bool? isActive, int page, int pageSize)
+    {
+        var query = _dbSet
+            .Include(p => p.Category)
+            .Include(p => p.Seller)
+            .Where(p => p.SellerId == sellerId && !p.IsDeleted);
+
+        if (categoryId.HasValue)
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        if (isActive.HasValue)
+            query = query.Where(p => p.IsActive == isActive.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(term) ||
+                (p.Description != null && p.Description.ToLower().Contains(term)) ||
+                (p.Category != null && p.Category.Name.ToLower().Contains(term)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (items, totalCount);
+    }
 }

@@ -8,84 +8,156 @@ import AdminDashboard from '../pages/admin/Dashboard/Dashboard';
 import AdminCategories from '../pages/admin/Categories/Categories';
 import AdminUsers from '../pages/admin/Users/Users';
 import AdminProducts from '../pages/admin/Products/Products';
+import AdminAccount from '../pages/admin/Account/Account';
 import SellerDashboard from '../pages/seller/Dashboard/Dashboard';
+import SellerAccount from '../pages/seller/Account/Account';
 import ForgotPasswordPage from '../pages/ForgotPassword/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPassword/ResetPasswordPage';
-import PrivateRoute from './PrivateRoute';
+import Account from '../pages/Account/Account';
+import AboutUs from '../pages/AboutUs/AboutUs';
+import ContactUs from '../pages/ContactUs/ContactUs';
+import GuestRoute from './GuestRoute';
+import AdminRoute from './AdminRoute';
+import SellerRoute from './SellerRoute';
+import CustomerRoute from './CustomerRoute';
 
 const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
-        
-        {/* Public Routes */}
-        <Route path="/products" element={<Products />} />
-        
-        {/* Auth Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
-        {/* Protected Dashboard Routes */}
+        {/* Guest-only: Home, Login, Register - redirect to dashboard if logged in */}
         <Route
-          path="/user/dashboard"
+          path="/"
           element={
-            <PrivateRoute>
-              <UserDashboard />
-            </PrivateRoute>
+            <GuestRoute>
+              <Home />
+            </GuestRoute>
           }
         />
         <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <GuestRoute>
+              <ForgotPasswordPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <GuestRoute>
+              <ResetPasswordPage />
+            </GuestRoute>
+          }
+        />
+
+        {/* Public Routes - no auth required */}
+        <Route path="/products" element={<Products />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<ContactUs />} />
+
+        {/* Customer-only: /account, /user/dashboard */}
+        <Route
+          path="/account"
+          element={
+            <CustomerRoute>
+              <Account />
+            </CustomerRoute>
+          }
+        />
+        <Route
+          path="/user/dashboard"
+          element={
+            <CustomerRoute>
+              <UserDashboard />
+            </CustomerRoute>
+          }
+        />
+
+        {/* Admin-only routes */}
+        <Route
           path="/admin/dashboard"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminDashboard />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/categories"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminCategories />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/users"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminUsers />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/admin/products"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminProducts />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
         <Route
+          path="/admin/account"
+          element={
+            <AdminRoute>
+              <AdminAccount />
+            </AdminRoute>
+          }
+        />
+
+        {/* Seller-only routes */}
+        <Route
           path="/seller/dashboard"
           element={
-            <PrivateRoute>
+            <SellerRoute>
               <SellerDashboard />
-            </PrivateRoute>
+            </SellerRoute>
           }
         />
         <Route
           path="/seller/products"
           element={
-            <PrivateRoute>
+            <SellerRoute>
               <AdminProducts />
-            </PrivateRoute>
+            </SellerRoute>
           }
         />
-        
+        <Route
+          path="/seller/account"
+          element={
+            <SellerRoute>
+              <SellerAccount />
+            </SellerRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { userService } from '../../../services/api/userService';
 import { toastService } from '../../../services/toast/toastService';
@@ -7,15 +7,12 @@ import { UserRoleValues } from '../../../types/auth.types';
 import type { UserListItem, PendingSeller, UpdateUserRequest, DashboardStats } from '../../../types/user.types';
 import styles from './Users.module.css';
 
-// Helper to check if role is Admin
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 const isAdminRole = (role: string | number | undefined): boolean => {
   if (!role) return false;
-  if (typeof role === 'string') {
-    return role === UserRoleValues.Admin;
-  }
-  if (typeof role === 'number') {
-    return role === 1;
-  }
+  if (typeof role === 'string') return role === UserRoleValues.Admin;
+  if (typeof role === 'number') return role === 1;
   return false;
 };
 
@@ -32,7 +29,6 @@ const AdminUsers: React.FC = () => {
   const navigate = useNavigate();
   const userInfo = authService.getUserInfo();
 
-  // State
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [pendingSellers, setPendingSellers] = useState<PendingSeller[]>([]);
@@ -40,7 +36,11 @@ const AdminUsers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal states
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
@@ -55,6 +55,9 @@ const AdminUsers: React.FC = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+
   useEffect(() => {
     if (!authService.isAuthenticated() || !isAdminRole(userInfo?.role)) {
       navigate('/');
@@ -62,12 +65,52 @@ const AdminUsers: React.FC = () => {
   }, [navigate, userInfo]);
 
   useEffect(() => {
-    fetchData();
-  }, [activeTab]);
-
-  useEffect(() => {
     fetchStats();
   }, []);
+
+  const fetchData = useCallback(async (pageNum: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (activeTab === 'pending') {
+        const result = await userService.getPendingSellersPaged({
+          page: pageNum,
+          pageSize,
+          search: searchQuery.trim() || undefined,
+        });
+        setPendingSellers(result.data);
+        setTotalPages(result.totalPages);
+        setTotalRecords(result.totalRecords);
+      } else {
+        const role = activeTab === 'users' ? 'User' : activeTab === 'sellers' ? 'Seller' : undefined;
+        const isActive = statusFilter === 'all' ? undefined : statusFilter === 'active';
+        const result = await userService.getPaged({
+          page: pageNum,
+          pageSize,
+          search: searchQuery.trim() || undefined,
+          role,
+          isActive,
+        });
+        setUsers(result.data);
+        setTotalPages(result.totalPages);
+        setTotalRecords(result.totalRecords);
+      }
+      setPage(pageNum);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, searchQuery, statusFilter, pageSize]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
+
+  useEffect(() => {
+    fetchData(1);
+  }, [activeTab, searchQuery, statusFilter, pageSize]);
 
   const fetchStats = async () => {
     try {
@@ -75,31 +118,6 @@ const AdminUsers: React.FC = () => {
       setStats(data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (activeTab === 'pending') {
-        const data = await userService.getPendingSellers();
-        setPendingSellers(data);
-      } else if (activeTab === 'users') {
-        const data = await userService.getByRole('User');
-        setUsers(data);
-      } else if (activeTab === 'sellers') {
-        const data = await userService.getByRole('Seller');
-        setUsers(data);
-      } else {
-        const data = await userService.getAll();
-        setUsers(data);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -147,7 +165,7 @@ const AdminUsers: React.FC = () => {
       await userService.update(selectedUser.id, updateData);
       toastService.success('User updated successfully');
       closeEditModal();
-      fetchData();
+      fetchData(page);
       fetchStats();
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to update user');
@@ -175,7 +193,7 @@ const AdminUsers: React.FC = () => {
       await userService.delete(selectedUser.id);
       toastService.success('User deleted successfully');
       closeDeleteModal();
-      fetchData();
+      fetchData(page);
       fetchStats();
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to delete user');
@@ -190,7 +208,7 @@ const AdminUsers: React.FC = () => {
     try {
       await userService.approveSeller(seller.id);
       toastService.success(`Seller ${seller.firstName} ${seller.lastName} approved successfully!`);
-      fetchData();
+      fetchData(page);
       fetchStats();
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to approve seller');
@@ -220,7 +238,7 @@ const AdminUsers: React.FC = () => {
       await userService.rejectSeller(selectedPendingSeller.id, rejectReason || undefined);
       toastService.success('Seller rejected successfully');
       closeRejectModal();
-      fetchData();
+      fetchData(page);
       fetchStats();
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to reject seller');
@@ -234,7 +252,7 @@ const AdminUsers: React.FC = () => {
     try {
       await userService.updateStatus(user.id, !user.isActive);
       toastService.success(`User ${user.isActive ? 'deactivated' : 'activated'} successfully`);
-      fetchData();
+      fetchData(page);
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to update status');
     }
@@ -252,41 +270,45 @@ const AdminUsers: React.FC = () => {
           <h2 className={styles.sidebarTitle}>Admin Panel</h2>
         </div>
         <nav className={styles.sidebarNav}>
-          <Link to="/admin/dashboard" className={styles.navItem}>
+          <NavLink to="/admin/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📊</span>
             Dashboard
-          </Link>
-          <Link to="/admin/users" className={`${styles.navItem} ${styles.active}`}>
+          </NavLink>
+          <NavLink to="/admin/users" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>👥</span>
             Users
             {stats && stats.pendingSellers > 0 && (
               <span className={styles.badge}>{stats.pendingSellers}</span>
             )}
-          </Link>
-          <Link to="/admin/products" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📦</span>
             Products
-          </Link>
-          <Link to="/admin/orders" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/orders" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🛒</span>
             Orders
-          </Link>
-          <Link to="/admin/categories" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/categories" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📁</span>
             Categories
-          </Link>
-          <Link to="/admin/sellers" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/sellers" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🏪</span>
             Sellers
-          </Link>
-          <Link to="/admin/coupons" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/coupons" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🎫</span>
             Coupons
-          </Link>
-          <Link to="/admin/reports" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/reports" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📈</span>
             Reports
-          </Link>
+          </NavLink>
+          <NavLink to="/admin/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
+            <span className={styles.navIcon}>👤</span>
+            Account
+          </NavLink>
         </nav>
         <div className={styles.sidebarFooter}>
           <button onClick={handleLogout} className={styles.logoutButton}>
@@ -375,6 +397,28 @@ const AdminUsers: React.FC = () => {
             </div>
           )}
 
+          {/* Search & Filter */}
+          <div className={styles.searchFilterBar}>
+            <input
+              type="text"
+              placeholder={activeTab === 'pending' ? 'Search by name, email, GST...' : 'Search by name, email, phone...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+            {activeTab !== 'pending' && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                className={styles.filterSelect}
+              >
+                <option value="all">All status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            )}
+          </div>
+
           {/* Content */}
           <div className={styles.tableContainer}>
             {loading ? (
@@ -386,15 +430,26 @@ const AdminUsers: React.FC = () => {
               // Pending Sellers Table
               pendingSellers.length === 0 ? (
                 <div className={styles.emptyState}>
-                  <span className={styles.emptyIcon}>✅</span>
-                  <h3>No Pending Approvals</h3>
-                  <p>All seller registrations have been processed</p>
+                  <span className={styles.emptyIcon}>
+                    {pendingSellers.length === 0 ? '✅' : '🔍'}
+                  </span>
+                  <h3>
+                    {pendingSellers.length === 0
+                      ? 'No Pending Approvals'
+                      : 'No matching pending sellers'}
+                  </h3>
+                  <p>
+                    {pendingSellers.length === 0
+                      ? 'All seller registrations have been processed'
+                      : 'Try adjusting your search'}
+                  </p>
                 </div>
               ) : (
+                <>
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>ID</th>
+                      <th>No.</th>
                       <th>Name</th>
                       <th>Email</th>
                       <th>Phone</th>
@@ -404,9 +459,9 @@ const AdminUsers: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingSellers.map((seller) => (
+                    {pendingSellers.map((seller, index) => (
                       <tr key={seller.id}>
-                        <td className={styles.idCell}>{seller.id}</td>
+                        <td className={styles.idCell}>{(page - 1) * pageSize + index + 1}</td>
                         <td className={styles.nameCell}>
                           {seller.firstName} {seller.lastName}
                         </td>
@@ -438,20 +493,72 @@ const AdminUsers: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+                {(totalRecords > 0) && (
+                  <div className={styles.pagination}>
+                    <span className={styles.paginationInfo}>
+                      Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRecords)} of {totalRecords}
+                    </span>
+                    <label className={styles.pageSizeLabel}>
+                      Per page:
+                      <select
+                        value={pageSize}
+                        onChange={(e) => setPageSize(Number(e.target.value))}
+                        className={styles.pageSizeSelect}
+                      >
+                        {PAGE_SIZE_OPTIONS.map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {totalPages > 1 && (
+                      <div className={styles.paginationButtons}>
+                        <button
+                          type="button"
+                          className={styles.pageBtn}
+                          disabled={page <= 1}
+                          onClick={() => fetchData(page - 1)}
+                        >
+                          Previous
+                        </button>
+                        <span className={styles.pageNumbers}>
+                          Page {page} of {totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.pageBtn}
+                          disabled={page >= totalPages}
+                          onClick={() => fetchData(page + 1)}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                </>
               )
             ) : (
               // Users Table
               users.length === 0 ? (
                 <div className={styles.emptyState}>
-                  <span className={styles.emptyIcon}>👥</span>
-                  <h3>No Users Found</h3>
-                  <p>No users match the current filter</p>
+                  <span className={styles.emptyIcon}>
+                    {users.length === 0 ? '👥' : '🔍'}
+                  </span>
+                  <h3>
+                    {users.length === 0 ? 'No Users Found' : 'No matching users'}
+                  </h3>
+                  <p>
+                    {users.length === 0
+                      ? 'No users match the current filter'
+                      : 'Try adjusting your search or filters'}
+                  </p>
                 </div>
               ) : (
+                <>
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>ID</th>
+                      <th>No.</th>
                       <th>Name</th>
                       <th>Email</th>
                       <th>Phone</th>
@@ -462,9 +569,9 @@ const AdminUsers: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {users.map((user, index) => (
                       <tr key={user.id}>
-                        <td className={styles.idCell}>{user.id}</td>
+                        <td className={styles.idCell}>{(page - 1) * pageSize + index + 1}</td>
                         <td className={styles.nameCell}>
                           {user.firstName} {user.lastName}
                         </td>
@@ -517,6 +624,49 @@ const AdminUsers: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+                {(totalRecords > 0) && (
+                  <div className={styles.pagination}>
+                    <span className={styles.paginationInfo}>
+                      Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRecords)} of {totalRecords}
+                    </span>
+                    <label className={styles.pageSizeLabel}>
+                      Per page:
+                      <select
+                        value={pageSize}
+                        onChange={(e) => setPageSize(Number(e.target.value))}
+                        className={styles.pageSizeSelect}
+                      >
+                        {PAGE_SIZE_OPTIONS.map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {totalPages > 1 && (
+                      <div className={styles.paginationButtons}>
+                        <button
+                          type="button"
+                          className={styles.pageBtn}
+                          disabled={page <= 1}
+                          onClick={() => fetchData(page - 1)}
+                        >
+                          Previous
+                        </button>
+                        <span className={styles.pageNumbers}>
+                          Page {page} of {totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.pageBtn}
+                          disabled={page >= totalPages}
+                          onClick={() => fetchData(page + 1)}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                </>
               )
             )}
           </div>

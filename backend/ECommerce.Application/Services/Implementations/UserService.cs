@@ -1,5 +1,6 @@
 using ECommerce.Application.Services.Interfaces;
 using ECommerce.Core.DTOs.Request.User;
+using ECommerce.Core.DTOs.Response.Common;
 using ECommerce.Core.DTOs.Response.User;
 using ECommerce.Core.Enums;
 using ECommerce.Core.Exceptions;
@@ -63,6 +64,45 @@ public class UserService : IUserService
             GstNumber = s.GstNumber,
             CreatedAt = s.CreatedAt
         });
+    }
+
+    public async Task<PagedResponse<UserListResponse>> GetAllUsersPagedAsync(string? search, string? role, bool? isActive, int page, int pageSize)
+    {
+        var (items, totalCount) = await _unitOfWork.Users.GetAllUsersPagedAsync(search, role, isActive, page, pageSize);
+        var data = items.Select(MapToUserListResponse).ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        return new PagedResponse<UserListResponse>
+        {
+            Data = data,
+            PageNumber = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            TotalRecords = totalCount
+        };
+    }
+
+    public async Task<PagedResponse<PendingSellerResponse>> GetPendingSellersPagedAsync(string? search, int page, int pageSize)
+    {
+        var (items, totalCount) = await _unitOfWork.Users.GetPendingSellersPagedAsync(search, page, pageSize);
+        var data = items.Select(s => new PendingSellerResponse
+        {
+            Id = s.Id,
+            FirstName = s.FirstName,
+            LastName = s.LastName,
+            Email = s.Email,
+            PhoneNumber = s.PhoneNumber,
+            GstNumber = s.GstNumber,
+            CreatedAt = s.CreatedAt
+        }).ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        return new PagedResponse<PendingSellerResponse>
+        {
+            Data = data,
+            PageNumber = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            TotalRecords = totalCount
+        };
     }
 
     public async Task<int> GetTotalUsersCountAsync()

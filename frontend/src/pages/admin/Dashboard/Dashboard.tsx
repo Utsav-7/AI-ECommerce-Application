@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { toastService } from '../../../services/toast/toastService';
 import { UserRoleValues } from '../../../types/auth.types';
@@ -45,38 +45,42 @@ const AdminDashboard: React.FC = () => {
           <h2 className={styles.sidebarTitle}>Admin Panel</h2>
         </div>
         <nav className={styles.sidebarNav}>
-          <Link to="/admin/dashboard" className={styles.navItem}>
+          <NavLink to="/admin/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📊</span>
             Dashboard
-          </Link>
-          <Link to="/admin/users" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/users" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>👥</span>
             Users
-          </Link>
-          <Link to="/admin/products" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📦</span>
             Products
-          </Link>
-          <Link to="/admin/orders" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/orders" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🛒</span>
             Orders
-          </Link>
-          <Link to="/admin/categories" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/categories" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📁</span>
             Categories
-          </Link>
-          <Link to="/admin/sellers" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/sellers" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🏪</span>
             Sellers
-          </Link>
-          <Link to="/admin/coupons" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/coupons" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🎫</span>
             Coupons
-          </Link>
-          <Link to="/admin/reports" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/reports" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📈</span>
             Reports
-          </Link>
+          </NavLink>
+          <NavLink to="/admin/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
+            <span className={styles.navIcon}>👤</span>
+            Account
+          </NavLink>
         </nav>
         <div className={styles.sidebarFooter}>
           <button onClick={handleLogout} className={styles.logoutButton}>

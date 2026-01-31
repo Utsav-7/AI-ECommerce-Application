@@ -45,4 +45,28 @@ public class CategoryRepository : Repository<Category>, ICategoryRepository
         return await _dbSet
             .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
     }
+
+    public async Task<(List<Category> Items, int TotalCount)> GetAllPagedAsync(string? search, bool? isActive, int page, int pageSize)
+    {
+        var query = _dbSet.Where(c => !c.IsDeleted);
+
+        if (isActive.HasValue)
+            query = query.Where(c => c.IsActive == isActive.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(c =>
+                c.Name.ToLower().Contains(term) ||
+                (c.Description != null && c.Description.ToLower().Contains(term)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(c => c.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (items, totalCount);
+    }
 }

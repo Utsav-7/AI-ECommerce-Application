@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar/Navbar';
 import Footer from '../../components/layout/Footer/Footer';
 import ProductCard from '../../components/product/ProductCard/ProductCard';
+import ProductQuickViewModal from '../../components/product/ProductQuickViewModal/ProductQuickViewModal';
 import { productService } from '../../services/api/productService';
 import { categoryService } from '../../services/api/categoryService';
 import type { ProductPublic } from '../../types/product.types';
@@ -19,11 +20,16 @@ const Products: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Filter states
+  const [selectedProduct, setSelectedProduct] = useState<ProductPublic | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc' | 'newest'>('newest');
   const [showFilters, setShowFilters] = useState(true);
+
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
 
   // Fetch products and categories
   useEffect(() => {
@@ -53,7 +59,7 @@ const Products: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const data = await categoryService.getAll();
-      setCategories(data);
+      setCategories(data.filter((c) => c.isActive));
     } catch (err) {
       console.error('Failed to fetch categories:', err);
     }
@@ -101,6 +107,20 @@ const Products: React.FC = () => {
 
     return filtered;
   }, [products, selectedCategory, searchQuery, priceRange, sortBy]);
+
+  // Paginated products
+  const paginatedProducts = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredProducts.slice(start, end);
+  }, [filteredProducts, page, pageSize]);
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategory, searchQuery, priceRange, sortBy, pageSize]);
 
   const handleClearFilters = () => {
     setSelectedCategory(null);
@@ -239,14 +259,70 @@ const Products: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className={styles.productsGrid}>
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className={styles.productsGrid}>
+                {paginatedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onProductClick={(p) => setSelectedProduct(p)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {filteredProducts.length > 0 && (
+                <div className={styles.pagination}>
+                  <span className={styles.paginationInfo}>
+                    Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredProducts.length)} of {filteredProducts.length}
+                  </span>
+                  <label className={styles.pageSizeLabel}>
+                    Per page:
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className={styles.pageSizeSelect}
+                    >
+                      {[8, 12, 24, 48].map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {totalPages > 1 && (
+                    <div className={styles.paginationButtons}>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page <= 1}
+                        onClick={() => setPage((p) => p - 1)}
+                      >
+                        Previous
+                      </button>
+                      <span className={styles.pageNumbers}>
+                        Page {page} of {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page >= totalPages}
+                        onClick={() => setPage((p) => p + 1)}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
+
+      <ProductQuickViewModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
 
       <Footer />
     </div>

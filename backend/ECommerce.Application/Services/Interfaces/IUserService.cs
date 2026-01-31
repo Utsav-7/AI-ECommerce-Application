@@ -1,4 +1,5 @@
 using ECommerce.Core.DTOs.Request.User;
+using ECommerce.Core.DTOs.Response.Common;
 using ECommerce.Core.DTOs.Response.User;
 
 namespace ECommerce.Application.Services.Interfaces;
@@ -10,6 +11,8 @@ public interface IUserService
     Task<IEnumerable<UserListResponse>> GetAllUsersAsync();
     Task<IEnumerable<UserListResponse>> GetUsersByRoleAsync(string role);
     Task<IEnumerable<PendingSellerResponse>> GetPendingSellersAsync();
+    Task<PagedResponse<UserListResponse>> GetAllUsersPagedAsync(string? search, string? role, bool? isActive, int page, int pageSize);
+    Task<PagedResponse<PendingSellerResponse>> GetPendingSellersPagedAsync(string? search, int page, int pageSize);
     
     // Dashboard stats
     Task<int> GetTotalUsersCountAsync();

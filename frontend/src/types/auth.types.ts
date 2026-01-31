@@ -44,6 +44,13 @@ export interface VerifyOtpRequest {
   confirmPassword: string;
 }
 
+export interface ChangePasswordRequest {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface LoginResponse {
   token: string;
   refreshToken: string;

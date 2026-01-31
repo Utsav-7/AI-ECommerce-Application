@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { categoryService } from '../../../services/api/categoryService';
 import { toastService } from '../../../services/toast/toastService';
@@ -7,15 +7,12 @@ import { UserRoleValues } from '../../../types/auth.types';
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../../../types/category.types';
 import styles from './Categories.module.css';
 
-// Helper to check if role is Admin
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 const isAdminRole = (role: string | number | undefined): boolean => {
   if (!role) return false;
-  if (typeof role === 'string') {
-    return role === UserRoleValues.Admin;
-  }
-  if (typeof role === 'number') {
-    return role === 1;
-  }
+  if (typeof role === 'string') return role === UserRoleValues.Admin;
+  if (typeof role === 'number') return role === 1;
   return false;
 };
 
@@ -61,28 +58,48 @@ const AdminCategories: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+
   useEffect(() => {
     if (!authService.isAuthenticated() || !isAdminRole(userInfo?.role)) {
       navigate('/');
     }
   }, [navigate, userInfo]);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async (pageNum: number = 1) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await categoryService.getAll();
-      setCategories(data);
+      const isActive = statusFilter === 'all' ? undefined : statusFilter === 'active';
+      const result = await categoryService.getPaged({
+        page: pageNum,
+        pageSize,
+        search: searchQuery.trim() || undefined,
+        isActive,
+      });
+      setCategories(result.data);
+      setTotalPages(result.totalPages);
+      setTotalRecords(result.totalRecords);
+      setPage(pageNum);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch categories');
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, statusFilter, pageSize]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
+
+  useEffect(() => {
+    fetchCategories(1);
+  }, [searchQuery, statusFilter, pageSize]);
 
   const handleLogout = () => {
     authService.logout();
@@ -255,7 +272,7 @@ const AdminCategories: React.FC = () => {
       }
 
       closeModal();
-      fetchCategories();
+      fetchCategories(page);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Operation failed';
       setFormError(errorMsg);
@@ -273,7 +290,7 @@ const AdminCategories: React.FC = () => {
       await categoryService.delete(deletingCategory.id);
       toastService.success('Category deleted successfully!');
       closeDeleteModal();
-      fetchCategories();
+      fetchCategories(page);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to delete category';
       setError(errorMsg);
@@ -296,38 +313,42 @@ const AdminCategories: React.FC = () => {
           <h2 className={styles.sidebarTitle}>Admin Panel</h2>
         </div>
         <nav className={styles.sidebarNav}>
-          <Link to="/admin/dashboard" className={styles.navItem}>
+          <NavLink to="/admin/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📊</span>
             Dashboard
-          </Link>
-          <Link to="/admin/users" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/users" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>👥</span>
             Users
-          </Link>
-          <Link to="/admin/products" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📦</span>
             Products
-          </Link>
-          <Link to="/admin/orders" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/orders" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🛒</span>
             Orders
-          </Link>
-          <Link to="/admin/categories" className={`${styles.navItem} ${styles.active}`}>
+          </NavLink>
+          <NavLink to="/admin/categories" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📁</span>
             Categories
-          </Link>
-          <Link to="/admin/sellers" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/sellers" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🏪</span>
             Sellers
-          </Link>
-          <Link to="/admin/coupons" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/coupons" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>🎫</span>
             Coupons
-          </Link>
-          <Link to="/admin/reports" className={styles.navItem}>
+          </NavLink>
+          <NavLink to="/admin/reports" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
             <span className={styles.navIcon}>📈</span>
             Reports
-          </Link>
+          </NavLink>
+          <NavLink to="/admin/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
+            <span className={styles.navIcon}>👤</span>
+            Account
+          </NavLink>
         </nav>
         <div className={styles.sidebarFooter}>
           <button onClick={handleLogout} className={styles.logoutButton}>
@@ -369,6 +390,26 @@ const AdminCategories: React.FC = () => {
             </button>
           </div>
 
+          {/* Search & Filter */}
+          <div className={styles.searchFilterBar}>
+            <input
+              type="text"
+              placeholder="Search by name or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+              className={styles.filterSelect}
+            >
+              <option value="all">All status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
           {/* Categories Table */}
           <div className={styles.tableContainer}>
             {loading ? (
@@ -378,18 +419,29 @@ const AdminCategories: React.FC = () => {
               </div>
             ) : categories.length === 0 ? (
               <div className={styles.emptyState}>
-                <span className={styles.emptyIcon}>📁</span>
-                <h3>No Categories Found</h3>
-                <p>Get started by creating your first category</p>
-                <button onClick={openCreateModal} className={styles.addButton}>
-                  <span>+</span> Add Category
-                </button>
+                <span className={styles.emptyIcon}>
+                  {searchQuery || statusFilter !== 'all' ? '🔍' : '📁'}
+                </span>
+                <h3>
+                  {searchQuery || statusFilter !== 'all' ? 'No matching categories' : 'No Categories Found'}
+                </h3>
+                <p>
+                  {searchQuery || statusFilter !== 'all'
+                    ? 'Try adjusting your search or filters'
+                    : 'Get started by creating your first category'}
+                </p>
+                {!searchQuery && statusFilter === 'all' && (
+                  <button onClick={openCreateModal} className={styles.addButton}>
+                    <span>+</span> Add Category
+                  </button>
+                )}
               </div>
             ) : (
+              <>
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>No.</th>
                     <th>Image</th>
                     <th>Name</th>
                     <th>Description</th>
@@ -399,9 +451,9 @@ const AdminCategories: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map((category) => (
+                  {categories.map((category, index) => (
                     <tr key={category.id}>
-                      <td className={styles.idCell}>{category.id}</td>
+                      <td className={styles.idCell}>{(page - 1) * pageSize + index + 1}</td>
                       <td className={styles.imageCell}>
                         {category.imageUrl ? (
                           <img
@@ -448,6 +500,49 @@ const AdminCategories: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+              {(totalRecords > 0) && (
+                <div className={styles.pagination}>
+                  <span className={styles.paginationInfo}>
+                    Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRecords)} of {totalRecords}
+                  </span>
+                  <label className={styles.pageSizeLabel}>
+                    Per page:
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className={styles.pageSizeSelect}
+                    >
+                      {PAGE_SIZE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {totalPages > 1 && (
+                    <div className={styles.paginationButtons}>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page <= 1}
+                        onClick={() => fetchCategories(page - 1)}
+                      >
+                        Previous
+                      </button>
+                      <span className={styles.pageNumbers}>
+                        Page {page} of {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page >= totalPages}
+                        onClick={() => fetchCategories(page + 1)}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>

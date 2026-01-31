@@ -2,9 +2,13 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../../components/layout/Navbar/Navbar';
 import Footer from '../../../components/layout/Footer/Footer';
+import ProductCard from '../../../components/product/ProductCard/ProductCard';
+import ProductQuickViewModal from '../../../components/product/ProductQuickViewModal/ProductQuickViewModal';
 import { authService } from '../../../services/api/authService';
 import { categoryService } from '../../../services/api/categoryService';
+import { productService } from '../../../services/api/productService';
 import type { Category } from '../../../types/category.types';
+import type { ProductPublic } from '../../../types/product.types';
 import styles from './Dashboard.module.css';
 
 // Import category images
@@ -19,6 +23,7 @@ import meatCategory from '../../../assets/Categories/Meat & Seafoods.png';
 import babyCategory from '../../../assets/Categories/Baby & Pregency.png';
 import healthcareCategory from '../../../assets/Categories/Healthcare.png';
 import householdCategory from '../../../assets/Categories/Household needs.png';
+import premierMembershipImage from '../../../assets/premier_membership_image.png';
 
 
 const UserDashboard: React.FC = () => {
@@ -27,8 +32,14 @@ const UserDashboard: React.FC = () => {
   const categoriesRef = useRef<HTMLDivElement>(null);
   const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
 
-  // State for categories
+  // State for categories (no pagination)
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // State for products section (no pagination, show first 8)
+  const [allProducts, setAllProducts] = useState<ProductPublic[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductPublic | null>(null);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -62,16 +73,37 @@ const UserDashboard: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
+      setCategoriesLoading(true);
       const data = await categoryService.getAll();
-      setCategories(data);
+      setCategories(data.filter((c) => c.isActive));
     } catch (err) {
       console.error('Failed to fetch categories:', err);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
-  // Fetch categories
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setProductsLoading(true);
+      try {
+        const data = await productService.getPublicProducts();
+        if (!cancelled) {
+          setAllProducts(data);
+        }
+      } catch (err) {
+        if (!cancelled) console.error('Failed to fetch products:', err);
+      } finally {
+        if (!cancelled) setProductsLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   if (!userInfo) {
@@ -96,8 +128,15 @@ const UserDashboard: React.FC = () => {
     'Household needs': householdCategory,
   };
 
-  const getCategoryImage = (categoryName: string): string => {
-    return categoryImageMap[categoryName] || fruitsCategory;
+  // Prefer image from API (DB). Only add cache-busting for http(s) URLs; data URLs must be used as-is
+  const getCategoryImage = (category: Category): string => {
+    if (category.imageUrl && category.imageUrl.trim()) {
+      const isDataUrl = category.imageUrl.startsWith('data:');
+      if (isDataUrl) return category.imageUrl;
+      const separator = category.imageUrl.includes('?') ? '&' : '?';
+      return `${category.imageUrl}${separator}c=${category.id}`;
+    }
+    return categoryImageMap[category.name] || fruitsCategory;
   };
 
   const getGreeting = () => {
@@ -130,7 +169,9 @@ const UserDashboard: React.FC = () => {
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>Shop by Category</h2>
           <div className={`${styles.categoriesGrid} ${isCategoriesVisible ? styles.categoriesVisible : ''}`}>
-            {categories.length > 0 ? (
+            {categoriesLoading ? (
+              <p className={styles.categoriesLoading}>Loading categories...</p>
+            ) : categories.length > 0 ? (
               categories.map((category, index) => (
                 <Link
                   key={category.id}
@@ -140,9 +181,17 @@ const UserDashboard: React.FC = () => {
                 >
                   <div className={styles.categoryImageWrapper}>
                     <img 
-                      src={getCategoryImage(category.name)} 
+                      src={getCategoryImage(category)} 
                       alt={category.name}
                       className={styles.categoryImage}
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (target.src !== categoryImageMap[category.name] && categoryImageMap[category.name] !== undefined) {
+                          target.src = categoryImageMap[category.name];
+                        } else {
+                          target.src = fruitsCategory;
+                        }
+                      }}
                     />
                     <div className={styles.categoryOverlay}>
                       <h3 className={styles.categoryName}>{category.name}</h3>
@@ -151,9 +200,43 @@ const UserDashboard: React.FC = () => {
                 </Link>
               ))
             ) : (
-              <p>Loading categories...</p>
+              <p className={styles.categoriesEmpty}>No categories available.</p>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Products Section */}
+      <section className={styles.productsSection}>
+        <div className={styles.container}>
+          <h2 className={styles.sectionTitle}>Featured Products</h2>
+          {productsLoading ? (
+            <p className={styles.productsLoading}>Loading products...</p>
+          ) : allProducts.length === 0 ? (
+            <p className={styles.productsEmpty}>No products available.</p>
+          ) : (
+            <>
+              <div className={styles.productsGrid}>
+                {allProducts.slice(0, 8).map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onProductClick={(p) => setSelectedProduct(p)}
+                  />
+                ))}
+              </div>
+              <ProductQuickViewModal
+                product={selectedProduct}
+                isOpen={!!selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+              />
+              <div className={styles.viewAllContainer}>
+                <Link to="/products" className={styles.viewAllButton}>
+                  View All Products
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -277,9 +360,11 @@ const UserDashboard: React.FC = () => {
               </Link>
             </div>
             <div className={styles.adImage}>
-              <div className={styles.adPlaceholder}>
-                <span className={styles.adPlaceholderText}>Premium Membership</span>
-              </div>
+              <img
+                src={premierMembershipImage}
+                alt="Premium Membership"
+                className={styles.adImageImg}
+              />
             </div>
           </div>
         </div>

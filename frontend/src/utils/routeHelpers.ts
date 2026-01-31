@@ -44,3 +44,19 @@ export const getDashboardPathByUserInfo = (userInfo: UserInfo | null): string =>
   return getDashboardPath(userInfo.role);
 };
 
+export const getAccountPathByUserInfo = (userInfo: UserInfo | null): string => {
+  if (!userInfo) {
+    return '/account';
+  }
+  const role = normalizeRole(userInfo.role);
+  switch (role) {
+    case UserRoleValues.Admin:
+      return '/admin/account';
+    case UserRoleValues.Seller:
+      return '/seller/account';
+    case UserRoleValues.User:
+    default:
+      return '/account';
+  }
+};
+

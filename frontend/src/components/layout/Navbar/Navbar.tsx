@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { toastService } from '../../../services/toast/toastService';
-import { getDashboardPathByUserInfo } from '../../../utils/routeHelpers';
+import { getDashboardPathByUserInfo, getAccountPathByUserInfo } from '../../../utils/routeHelpers';
 import styles from './Navbar.module.css';
 
 const Navbar: React.FC = () => {
@@ -118,7 +118,7 @@ const Navbar: React.FC = () => {
                     </div>
                     <div className={styles.userDropdownDivider}></div>
                     <Link 
-                      to="/user/account" 
+                      to={getAccountPathByUserInfo(userInfo)}
                       className={styles.userDropdownItem}
                       onClick={() => setIsUserMenuOpen(false)}
                     >

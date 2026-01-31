@@ -6,6 +6,8 @@ using ECommerce.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using PagedUserList = ECommerce.Core.DTOs.Response.Common.PagedResponse<ECommerce.Core.DTOs.Response.User.UserListResponse>;
+using PagedPendingSeller = ECommerce.Core.DTOs.Response.Common.PagedResponse<ECommerce.Core.DTOs.Response.User.PendingSellerResponse>;
 
 namespace ECommerce.API.Controllers;
 
@@ -56,6 +58,41 @@ public class UsersController : ControllerBase
             _logger.LogError(ex, "An error occurred while retrieving users");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 ApiResponse<IEnumerable<UserListResponse>>.ErrorResponse("An error occurred while retrieving users"));
+        }
+    }
+
+    /// <summary>
+    /// Get users with server-side pagination and search (Admin only)
+    /// </summary>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(ApiResponse<PagedUserList>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedUserList>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<PagedUserList>), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<PagedUserList>>> GetUsersPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] string? role = null,
+        [FromQuery] bool? isActive = null)
+    {
+        if (!IsAdmin())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<PagedUserList>.ErrorResponse("Access denied. Admin privileges required."));
+        }
+
+        try
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var result = await _userService.GetAllUsersPagedAsync(search, role, isActive, page, pageSize);
+            return Ok(ApiResponse<PagedUserList>.SuccessResponse(result, "Users retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving users");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<PagedUserList>.ErrorResponse("An error occurred while retrieving users"));
         }
     }
 
@@ -121,6 +158,39 @@ public class UsersController : ControllerBase
             _logger.LogError(ex, "An error occurred while retrieving pending sellers");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 ApiResponse<IEnumerable<PendingSellerResponse>>.ErrorResponse("An error occurred while retrieving pending sellers"));
+        }
+    }
+
+    /// <summary>
+    /// Get pending sellers with server-side pagination and search (Admin only)
+    /// </summary>
+    [HttpGet("pending-sellers/paged")]
+    [ProducesResponseType(typeof(ApiResponse<PagedPendingSeller>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedPendingSeller>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<PagedPendingSeller>), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<PagedPendingSeller>>> GetPendingSellersPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null)
+    {
+        if (!IsAdmin())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<PagedPendingSeller>.ErrorResponse("Access denied. Admin privileges required."));
+        }
+
+        try
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var result = await _userService.GetPendingSellersPagedAsync(search, page, pageSize);
+            return Ok(ApiResponse<PagedPendingSeller>.SuccessResponse(result, "Pending sellers retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving pending sellers");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<PagedPendingSeller>.ErrorResponse("An error occurred while retrieving pending sellers"));
         }
     }
 

@@ -1,6 +1,7 @@
 using ECommerce.Application.Services.Interfaces;
 using ECommerce.Core.DTOs.Request.Category;
 using ECommerce.Core.DTOs.Response.Category;
+using ECommerce.Core.DTOs.Response.Common;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Exceptions;
 using ECommerce.Core.Interfaces;
@@ -32,6 +33,21 @@ public class CategoryService : ICategoryService
     {
         var categories = await _unitOfWork.Categories.GetAllAsync();
         return categories.Select(MapToResponse);
+    }
+
+    public async Task<PagedResponse<CategoryResponse>> GetAllPagedAsync(string? search, bool? isActive, int page, int pageSize)
+    {
+        var (items, totalCount) = await _unitOfWork.Categories.GetAllPagedAsync(search, isActive, page, pageSize);
+        var data = items.Select(MapToResponse).ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        return new PagedResponse<CategoryResponse>
+        {
+            Data = data,
+            PageNumber = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            TotalRecords = totalCount
+        };
     }
 
     public async Task<CategoryResponse> CreateAsync(CreateCategoryRequest request)

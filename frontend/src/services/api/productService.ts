@@ -7,8 +7,17 @@ import type {
   CreateProductRequest, 
   UpdateProductRequest 
 } from '../../types/product.types';
-import type { ApiResponse } from '../../types/common.types';
+import type { ApiResponse, PagedResponse } from '../../types/common.types';
 import { handleApiError } from '../../utils/errorHandler';
+
+export interface ProductsPagedParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  categoryId?: number;
+  isActive?: boolean;
+  isVisible?: boolean;
+}
 
 export const productService = {
   // ========== Public Endpoints (No Auth Required) ==========
@@ -83,6 +92,42 @@ export const productService = {
     try {
       const response = await apiClient.get<ApiResponse<ProductListItem[]>>(
         API_ENDPOINTS.PRODUCTS.GET_ALL
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || 'Failed to fetch products');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getPaged(params: ProductsPagedParams = {}): Promise<PagedResponse<ProductListItem>> {
+    try {
+      const { page = 1, pageSize = 10, search, categoryId, isActive, isVisible } = params;
+      const response = await apiClient.get<ApiResponse<PagedResponse<ProductListItem>>>(
+        API_ENDPOINTS.PRODUCTS.GET_PAGED,
+        { params: { page, pageSize, search: search || undefined, categoryId, isActive, isVisible } }
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || 'Failed to fetch products');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getMyProductsPaged(params: ProductsPagedParams = {}): Promise<PagedResponse<ProductListItem>> {
+    try {
+      const { page = 1, pageSize = 10, search, categoryId, isActive } = params;
+      const response = await apiClient.get<ApiResponse<PagedResponse<ProductListItem>>>(
+        API_ENDPOINTS.PRODUCTS.GET_MY_PRODUCTS_PAGED,
+        { params: { page, pageSize, search: search || undefined, categoryId, isActive } }
       );
 
       if (response.data.success && response.data.data) {

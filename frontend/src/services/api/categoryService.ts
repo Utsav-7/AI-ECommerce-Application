@@ -1,14 +1,39 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../../utils/constants';
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../../types/category.types';
-import type { ApiResponse } from '../../types/common.types';
+import type { ApiResponse, PagedResponse } from '../../types/common.types';
 import { handleApiError } from '../../utils/errorHandler';
+
+export interface CategoriesPagedParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  isActive?: boolean;
+}
 
 export const categoryService = {
   async getAll(): Promise<Category[]> {
     try {
       const response = await apiClient.get<ApiResponse<Category[]>>(
         API_ENDPOINTS.CATEGORIES.GET_ALL
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || 'Failed to fetch categories');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getPaged(params: CategoriesPagedParams = {}): Promise<PagedResponse<Category>> {
+    try {
+      const { page = 1, pageSize = 10, search, isActive } = params;
+      const response = await apiClient.get<ApiResponse<PagedResponse<Category>>>(
+        API_ENDPOINTS.CATEGORIES.GET_PAGED,
+        { params: { page, pageSize, search: search || undefined, isActive } }
       );
 
       if (response.data.success && response.data.data) {

@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { productService } from '../../../services/api/productService';
 import { categoryService } from '../../../services/api/categoryService';
@@ -49,6 +49,8 @@ const initialFormData: ProductFormData = {
   additionalImages: [],
 };
 
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 const AdminProducts: React.FC = () => {
   const navigate = useNavigate();
   const userInfo = authService.getUserInfo();
@@ -74,6 +76,15 @@ const AdminProducts: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'visible' | 'hidden'>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+
   useEffect(() => {
     if (!authService.isAuthenticated() || (!isAdmin && !isSeller)) {
       navigate('/');
@@ -81,25 +92,56 @@ const AdminProducts: React.FC = () => {
   }, [navigate, isAdmin, isSeller]);
 
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (pageNum: number = 1) => {
     try {
       setLoading(true);
       setError(null);
-      // Admin sees all products, Seller sees only their products
-      const data = isAdmin 
-        ? await productService.getAll() 
-        : await productService.getMyProducts();
-      setProducts(data);
+      const categoryId = categoryFilter ? parseInt(categoryFilter, 10) : undefined;
+      const isActive = statusFilter === 'all' ? undefined : statusFilter === 'active';
+      const isVisible = visibilityFilter === 'all' ? undefined : visibilityFilter === 'visible';
+
+      if (isAdmin) {
+        const result = await productService.getPaged({
+          page: pageNum,
+          pageSize,
+          search: searchQuery.trim() || undefined,
+          categoryId,
+          isActive,
+          isVisible,
+        });
+        setProducts(result.data);
+        setTotalPages(result.totalPages);
+        setTotalRecords(result.totalRecords);
+      } else {
+        const result = await productService.getMyProductsPaged({
+          page: pageNum,
+          pageSize,
+          search: searchQuery.trim() || undefined,
+          categoryId,
+          isActive,
+        });
+        setProducts(result.data);
+        setTotalPages(result.totalPages);
+        setTotalRecords(result.totalRecords);
+      }
+      setPage(pageNum);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin, searchQuery, categoryFilter, statusFilter, visibilityFilter, pageSize]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
+
+  useEffect(() => {
+    fetchProducts(1);
+  }, [searchQuery, categoryFilter, statusFilter, visibilityFilter, pageSize]);
 
   const fetchCategories = async () => {
     try {
@@ -264,7 +306,7 @@ const AdminProducts: React.FC = () => {
       await productService.create(createData);
       toastService.success('Product created successfully');
       closeCreateModal();
-      fetchProducts();
+      fetchProducts(page);
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to create product');
     } finally {
@@ -329,7 +371,7 @@ const AdminProducts: React.FC = () => {
       await productService.update(selectedProduct.id, updateData);
       toastService.success('Product updated successfully');
       closeEditModal();
-      fetchProducts();
+      fetchProducts(page);
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to update product');
     } finally {
@@ -356,7 +398,7 @@ const AdminProducts: React.FC = () => {
       await productService.delete(selectedProduct.id);
       toastService.success('Product deleted successfully');
       closeDeleteModal();
-      fetchProducts();
+      fetchProducts(page);
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to delete product');
     } finally {
@@ -369,7 +411,7 @@ const AdminProducts: React.FC = () => {
     try {
       await productService.toggleStatus(product.id);
       toastService.success(`Product ${product.isActive ? 'deactivated' : 'activated'} successfully`);
-      fetchProducts();
+      fetchProducts(page);
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to toggle status');
     }
@@ -379,7 +421,7 @@ const AdminProducts: React.FC = () => {
     try {
       await productService.toggleVisibility(product.id);
       toastService.success(`Product ${product.isVisible ? 'hidden' : 'visible'} successfully`);
-      fetchProducts();
+      fetchProducts(page);
     } catch (err) {
       toastService.error(err instanceof Error ? err.message : 'Failed to toggle visibility');
     }
@@ -390,13 +432,22 @@ const AdminProducts: React.FC = () => {
   const navItems = isAdmin ? [
     { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
     { path: '/admin/users', icon: '👥', label: 'Users' },
-    { path: '/admin/products', icon: '📦', label: 'Products', active: true },
+    { path: '/admin/products', icon: '📦', label: 'Products' },
     { path: '/admin/orders', icon: '🛒', label: 'Orders' },
     { path: '/admin/categories', icon: '📁', label: 'Categories' },
+    { path: '/admin/sellers', icon: '🏪', label: 'Sellers' },
+    { path: '/admin/coupons', icon: '🎫', label: 'Coupons' },
+    { path: '/admin/reports', icon: '📈', label: 'Reports' },
+    { path: '/admin/account', icon: '👤', label: 'Account' },
   ] : [
     { path: '/seller/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/seller/products', icon: '📦', label: 'My Products', active: true },
+    { path: '/seller/products', icon: '📦', label: 'Products' },
+    { path: '/seller/inventory', icon: '📋', label: 'Inventory' },
     { path: '/seller/orders', icon: '🛒', label: 'Orders' },
+    { path: '/seller/sales', icon: '💰', label: 'Sales' },
+    { path: '/seller/reports', icon: '📈', label: 'Reports' },
+    { path: '/seller/settings', icon: '⚙️', label: 'Settings' },
+    { path: '/seller/account', icon: '👤', label: 'Account' },
   ];
 
   return (
@@ -408,14 +459,15 @@ const AdminProducts: React.FC = () => {
         </div>
         <nav className={styles.sidebarNav}>
           {navItems.map(item => (
-            <Link 
+            <NavLink
               key={item.path}
-              to={item.path} 
-              className={`${styles.navItem} ${item.active ? styles.active : ''}`}
+              to={item.path}
+              end
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}
             >
               <span className={styles.navIcon}>{item.icon}</span>
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
         <div className={styles.sidebarFooter}>
@@ -450,6 +502,49 @@ const AdminProducts: React.FC = () => {
             </div>
           )}
 
+          {/* Search & Filter */}
+          <div className={styles.searchFilterBar}>
+            <input
+              type="text"
+              placeholder="Search by product name, category, seller..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className={styles.filterSelect}
+            >
+              <option value="">All categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+              className={styles.filterSelect}
+            >
+              <option value="all">All status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            {isAdmin && (
+              <select
+                value={visibilityFilter}
+                onChange={(e) => setVisibilityFilter(e.target.value as 'all' | 'visible' | 'hidden')}
+                className={styles.filterSelect}
+              >
+                <option value="all">All visibility</option>
+                <option value="visible">Visible</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            )}
+          </div>
+
           {/* Products Table */}
           <div className={styles.tableContainer}>
             {loading ? (
@@ -459,17 +554,31 @@ const AdminProducts: React.FC = () => {
               </div>
             ) : products.length === 0 ? (
               <div className={styles.emptyState}>
-                <span className={styles.emptyIcon}>📦</span>
-                <h3>No Products Found</h3>
-                <p>Start by adding your first product</p>
-                <button onClick={openCreateModal} className={styles.addButton}>
-                  + Add Product
-                </button>
+                <span className={styles.emptyIcon}>
+                  {searchQuery || categoryFilter || statusFilter !== 'all' || visibilityFilter !== 'all' ? '🔍' : '📦'}
+                </span>
+                <h3>
+                  {searchQuery || categoryFilter || statusFilter !== 'all' || visibilityFilter !== 'all'
+                    ? 'No matching products'
+                    : 'No Products Found'}
+                </h3>
+                <p>
+                  {searchQuery || categoryFilter || statusFilter !== 'all' || visibilityFilter !== 'all'
+                    ? 'Try adjusting your search or filters'
+                    : 'Start by adding your first product'}
+                </p>
+                {!searchQuery && !categoryFilter && statusFilter === 'all' && visibilityFilter === 'all' && (
+                  <button onClick={openCreateModal} className={styles.addButton}>
+                    + Add Product
+                  </button>
+                )}
               </div>
             ) : (
+              <>
               <table className={styles.table}>
                 <thead>
                   <tr>
+                    <th>No.</th>
                     <th>Image</th>
                     <th>Product</th>
                     <th>Category</th>
@@ -481,8 +590,9 @@ const AdminProducts: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product) => (
+                  {products.map((product, index) => (
                     <tr key={product.id}>
+                      <td className={styles.idCell}>{(page - 1) * pageSize + index + 1}</td>
                       <td className={styles.imageCell}>
                         {product.imageUrl ? (
                           <img 
@@ -561,6 +671,49 @@ const AdminProducts: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+              {(totalRecords > 0) && (
+                <div className={styles.pagination}>
+                  <span className={styles.paginationInfo}>
+                    Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRecords)} of {totalRecords}
+                  </span>
+                  <label className={styles.pageSizeLabel}>
+                    Per page:
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className={styles.pageSizeSelect}
+                    >
+                      {PAGE_SIZE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {totalPages > 1 && (
+                    <div className={styles.paginationButtons}>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page <= 1}
+                        onClick={() => fetchProducts(page - 1)}
+                      >
+                        Previous
+                      </button>
+                      <span className={styles.pageNumbers}>
+                        Page {page} of {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page >= totalPages}
+                        onClick={() => fetchProducts(page + 1)}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>

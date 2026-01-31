@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar/Navbar';
 import Footer from '../../components/layout/Footer/Footer';
 import ProductCard from '../../components/product/ProductCard/ProductCard';
+import ProductQuickViewModal from '../../components/product/ProductQuickViewModal/ProductQuickViewModal';
 import { authService } from '../../services/api/authService';
 import { productService } from '../../services/api/productService';
 import { getDashboardPathByUserInfo } from '../../utils/routeHelpers';
@@ -84,6 +85,7 @@ const Home: React.FC = () => {
   // State for limited products
   const [featuredProducts, setFeaturedProducts] = useState<ProductPublic[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<ProductPublic | null>(null);
 
   // Fetch limited products (8 products)
   useEffect(() => {
@@ -376,9 +378,18 @@ const Home: React.FC = () => {
             <>
               <div className={styles.productsGrid}>
                 {featuredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onProductClick={(p) => setSelectedProduct(p)}
+                  />
                 ))}
               </div>
+              <ProductQuickViewModal
+                product={selectedProduct}
+                isOpen={!!selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+              />
               <div className={styles.viewAllContainer}>
                 <Link to="/products" className={styles.viewAllButton}>
                   View All Products
