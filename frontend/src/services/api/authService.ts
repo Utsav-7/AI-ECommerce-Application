@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS, STORAGE_KEYS } from '../../utils/constants';
-import type { LoginRequest, RegisterRequest, LoginResponse, RegisterResponse, ResetPasswordRequest, VerifyOtpRequest, UserRole } from '../../types/auth.types';
+import type { LoginRequest, RegisterRequest, LoginResponse, RegisterResponse, ResetPasswordRequest, VerifyOtpRequest, ChangePasswordRequest, UserInfo, UserRole } from '../../types/auth.types';
 import { UserRoleValues } from '../../types/auth.types';
 import type { ApiResponse } from '../../types/common.types';
 import { handleApiError } from '../../utils/errorHandler';
@@ -134,6 +134,42 @@ export const authService = {
 
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to reset password');
+      }
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getMe(): Promise<UserInfo> {
+    try {
+      const response = await apiClient.get<ApiResponse<UserInfo>>(
+        API_ENDPOINTS.AUTH.ME
+      );
+
+      if (response.data.success && response.data.data) {
+        const userInfo = {
+          ...response.data.data,
+          role: normalizeRole(response.data.data.role)
+        };
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userInfo));
+        return userInfo;
+      }
+
+      throw new Error(response.data.message || 'Failed to fetch user');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async changePassword(request: ChangePasswordRequest): Promise<void> {
+    try {
+      const response = await apiClient.post<ApiResponse<object>>(
+        API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+        request
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to change password');
       }
     } catch (error) {
       throw new Error(handleApiError(error));

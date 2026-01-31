@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
+import { toastService } from '../../../services/toast/toastService';
 import type { ProductPublic } from '../../../types/product.types';
 import styles from './ProductCard.module.css';
 
 interface ProductCardProps {
   product: ProductPublic;
+  onProductClick?: (product: ProductPublic) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) => {
   const getImageUrl = () => {
     if (product.imageUrl) {
       // If imageUrl is a base64 string, use it directly
@@ -48,15 +50,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const displayPrice = product.discountPrice || product.price;
   const originalPrice = product.discountPrice ? product.price : null;
 
-  return (
-    <Link to={`/product/${product.id}`} className={styles.productCard}>
+  const handleViewClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onProductClick) {
+      onProductClick(product);
+    }
+  };
+
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!product.inStock) return;
+    toastService.success(`${product.name} added to cart`);
+    // Cart integration can be added here
+  };
+
+  const cardContent = (
+    <>
       <div className={styles.productImageWrapper}>
         <img 
           src={getImageUrl()} 
           alt={product.name}
           className={styles.productImage}
           onError={(e) => {
-            // Fallback to default image on error
             const target = e.currentTarget;
             if (!target.src.includes('product1.jpg')) {
               target.src = '/src/assets/Products/product1.jpg';
@@ -87,18 +104,37 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
         <div className={styles.productSeller}>Sold by: {product.sellerName}</div>
-        <button 
-          className={`${styles.addToCartBtn} ${!product.inStock ? styles.disabled : ''}`}
-          disabled={!product.inStock}
-          onClick={(e) => {
-            e.preventDefault();
-            // Add to cart functionality will be handled here
-          }}
-        >
-          {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-        </button>
+        <div className={styles.actionButtons}>
+          {onProductClick ? (
+            <button
+              type="button"
+              className={styles.viewBtn}
+              onClick={handleViewClick}
+            >
+              View
+            </button>
+          ) : (
+            <Link to={`/product/${product.id}`} className={styles.viewBtn}>
+              View
+            </Link>
+          )}
+          <button
+            type="button"
+            className={`${styles.addToCartBtn} ${!product.inStock ? styles.disabled : ''}`}
+            onClick={handleAddToCartClick}
+            disabled={!product.inStock}
+          >
+            Add to Cart
+          </button>
+        </div>
       </div>
-    </Link>
+    </>
+  );
+
+  return (
+    <div className={styles.productCard}>
+      {cardContent}
+    </div>
   );
 };
 

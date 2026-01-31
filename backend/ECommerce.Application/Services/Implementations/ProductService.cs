@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ECommerce.Application.Services.Interfaces;
 using ECommerce.Core.DTOs.Request.Product;
+using ECommerce.Core.DTOs.Response.Common;
 using ECommerce.Core.DTOs.Response.Product;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Exceptions;
@@ -90,6 +91,36 @@ public class ProductService : IProductService
     {
         var products = await _unitOfWork.Products.GetBySellerIdAsync(sellerId);
         return products.Select(MapToListResponse);
+    }
+
+    public async Task<PagedResponse<ProductListResponse>> GetAllProductsPagedAsync(string? search, int? categoryId, bool? isActive, bool? isVisible, int page, int pageSize)
+    {
+        var (items, totalCount) = await _unitOfWork.Products.GetAllWithDetailsPagedAsync(search, categoryId, isActive, isVisible, page, pageSize);
+        var data = items.Select(MapToListResponse).ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        return new PagedResponse<ProductListResponse>
+        {
+            Data = data,
+            PageNumber = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            TotalRecords = totalCount
+        };
+    }
+
+    public async Task<PagedResponse<ProductListResponse>> GetProductsBySellerPagedAsync(int sellerId, string? search, int? categoryId, bool? isActive, int page, int pageSize)
+    {
+        var (items, totalCount) = await _unitOfWork.Products.GetBySellerIdPagedAsync(sellerId, search, categoryId, isActive, page, pageSize);
+        var data = items.Select(MapToListResponse).ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        return new PagedResponse<ProductListResponse>
+        {
+            Data = data,
+            PageNumber = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            TotalRecords = totalCount
+        };
     }
 
     public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request, int sellerId)

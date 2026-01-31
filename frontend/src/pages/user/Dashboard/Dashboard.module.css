@@ -96,6 +96,80 @@
   color: inherit;
 }
 
+.categoriesLoading,
+.categoriesEmpty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.paginationInfo {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.pageSizeLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.pageSizeSelect {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pageBtn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #4a5568;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageNumbers {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
 @keyframes fadeInUp {
   to {
     opacity: 1;
@@ -435,6 +509,15 @@
   justify-content: center;
 }
 
+.adImageImg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
 .adPlaceholder {
   width: 100%;
   aspect-ratio: 1;
@@ -452,6 +535,19 @@
   font-weight: 700;
   opacity: 0.8;
   text-align: center;
+}
+
+/* Products Section */
+.productsSection {
+  padding: 4rem 2rem;
+  background: #f7fafc;
+}
+
+.productsLoading,
+.productsEmpty {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
 }
 
 .productsGrid {
@@ -601,6 +697,7 @@
 
 .viewAllContainer {
   text-align: center;
+  margin-top: 2rem;
 }
 
 .viewAllButton {

@@ -129,28 +129,57 @@
   margin-bottom: 1rem;
 }
 
-.addToCartBtn {
+.actionButtons {
   margin-top: auto;
-  padding: 0.75rem 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewBtn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewBtn:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+}
+
+.addToCartBtn {
+  flex: 1;
+  padding: 0.65rem 1rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .addToCartBtn:hover:not(.disabled) {
   background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .addToCartBtn.disabled {
-  background: #cbd5e0;
+  background: #e2e8f0;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
