@@ -5,6 +5,7 @@ import LoginPage from '../pages/Login/LoginPage';
 import RegisterPage from '../pages/Register/RegisterPage';
 import UserDashboard from '../pages/user/Dashboard/Dashboard';
 import AdminDashboard from '../pages/admin/Dashboard/Dashboard';
+import AdminCoupons from '../pages/admin/Coupons/Coupons';
 import AdminCategories from '../pages/admin/Categories/Categories';
 import AdminUsers from '../pages/admin/Users/Users';
 import AdminProducts from '../pages/admin/Products/Products';
@@ -120,6 +121,14 @@ const AppRoutes: React.FC = () => {
           element={
             <AdminRoute>
               <AdminProducts />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/coupons"
+          element={
+            <AdminRoute>
+              <AdminCoupons />
             </AdminRoute>
           }
         />
