@@ -52,6 +52,15 @@ export const API_ENDPOINTS = {
     TOGGLE_STATUS: (id: number) => `/api/Products/${id}/toggle-status`,
     TOGGLE_VISIBILITY: (id: number) => `/api/Products/${id}/toggle-visibility`,
   },
+  COUPONS: {
+    BASE: '/api/Coupons',
+    GET_ALL: '/api/Coupons',
+    GET_PAGED: '/api/Coupons/paged',
+    GET_BY_ID: (id: number) => `/api/Coupons/${id}`,
+    CREATE: '/api/Coupons',
+    UPDATE: (id: number) => `/api/Coupons/${id}`,
+    DELETE: (id: number) => `/api/Coupons/${id}`,
+  },
 } as const;
 
 export const STORAGE_KEYS = {

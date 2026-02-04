@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private IUserRepository? _users;
     private ICategoryRepository? _categories;
     private IProductRepository? _products;
+    private ICouponRepository? _coupons;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -43,6 +44,15 @@ public class UnitOfWork : IUnitOfWork
         {
             _products ??= new ProductRepository(_context);
             return _products;
+        }
+    }
+
+    public ICouponRepository Coupons
+    {
+        get
+        {
+            _coupons ??= new CouponRepository(_context);
+            return _coupons;
         }
     }
 

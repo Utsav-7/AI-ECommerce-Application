@@ -5,6 +5,7 @@ public interface IUnitOfWork : IDisposable
     IUserRepository Users { get; }
     ICategoryRepository Categories { get; }
     IProductRepository Products { get; }
+    ICouponRepository Coupons { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();
