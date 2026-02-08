@@ -46,4 +46,7 @@ export interface DashboardStats {
   totalUsers: number;
   totalSellers: number;
   pendingSellers: number;
+  totalProducts: number;
+  totalCategories: number;
+  totalCoupons: number;
 }

@@ -6,6 +6,7 @@ namespace ECommerce.Application.Services.Interfaces;
 
 public interface ICategoryService
 {
+    Task<int> GetTotalCountAsync();
     Task<CategoryResponse> GetByIdAsync(int id);
     Task<IEnumerable<CategoryResponse>> GetAllAsync();
     Task<PagedResponse<CategoryResponse>> GetAllPagedAsync(string? search, bool? isActive, int page, int pageSize);

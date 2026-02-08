@@ -133,6 +133,90 @@
   color: #4a5568;
 }
 
+.liveBadge {
+  font-size: 0.75rem;
+  color: #22c55e;
+  font-weight: 600;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.alertBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.alertBanner span {
+  font-weight: 600;
+  color: #92400e;
+}
+
+.alertLink {
+  color: #b45309;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.alertLink:hover {
+  text-decoration: underline;
+}
+
+.statCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.statLink {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.statCard:hover .statLink {
+  text-decoration: underline;
+}
+
+.chartsSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chartCard {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chartTitle {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.chartWrapper {
+  width: 100%;
+  min-height: 280px;
+}
+
+.managementCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
 .content {
   flex: 1;
   padding: 2rem;

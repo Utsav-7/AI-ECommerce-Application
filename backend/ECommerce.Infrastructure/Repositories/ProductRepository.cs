@@ -130,10 +130,12 @@ public class ProductRepository : Repository<Product>, IProductRepository
         }
 
         var totalCount = await query.CountAsync();
+        var skip = (page - 1) * pageSize;
+        var take = pageSize;
         var items = await query
             .OrderByDescending(p => p.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
         return (items, totalCount);
     }
@@ -160,10 +162,12 @@ public class ProductRepository : Repository<Product>, IProductRepository
         }
 
         var totalCount = await query.CountAsync();
+        var skip = (page - 1) * pageSize;
+        var take = pageSize;
         var items = await query
             .OrderByDescending(p => p.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
         return (items, totalCount);
     }

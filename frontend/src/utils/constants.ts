@@ -52,6 +52,10 @@ export const API_ENDPOINTS = {
     TOGGLE_STATUS: (id: number) => `/api/Products/${id}/toggle-status`,
     TOGGLE_VISIBILITY: (id: number) => `/api/Products/${id}/toggle-visibility`,
   },
+  INVENTORIES: {
+    GET_SELLER: '/api/Inventories/seller',
+    GET_SELLER_STATS: '/api/Inventories/seller/stats',
+  },
   COUPONS: {
     BASE: '/api/Coupons',
     GET_ALL: '/api/Coupons',
