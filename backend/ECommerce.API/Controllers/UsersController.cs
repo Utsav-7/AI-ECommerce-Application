@@ -17,11 +17,17 @@ namespace ECommerce.API.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;
+    private readonly ICouponService _couponService;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, IProductService productService, ICategoryService categoryService, ICouponService couponService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _productService = productService;
+        _categoryService = categoryService;
+        _couponService = couponService;
         _logger = logger;
     }
 
@@ -214,12 +220,18 @@ public class UsersController : ControllerBase
             var totalUsers = await _userService.GetTotalUsersCountAsync();
             var totalSellers = await _userService.GetTotalSellersCountAsync();
             var pendingSellers = await _userService.GetPendingSellersCountAsync();
+            var totalProducts = await _productService.GetTotalProductCountAsync();
+            var totalCategories = await _categoryService.GetTotalCountAsync();
+            var totalCoupons = await _couponService.GetTotalCountAsync();
 
             var stats = new
             {
                 TotalUsers = totalUsers,
                 TotalSellers = totalSellers,
-                PendingSellers = pendingSellers
+                PendingSellers = pendingSellers,
+                TotalProducts = totalProducts,
+                TotalCategories = totalCategories,
+                TotalCoupons = totalCoupons
             };
 
             return Ok(ApiResponse<object>.SuccessResponse(stats, "Dashboard stats retrieved successfully"));

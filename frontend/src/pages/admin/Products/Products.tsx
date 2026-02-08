@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
+import axios from 'axios';
 import { productService } from '../../../services/api/productService';
 import { categoryService } from '../../../services/api/categoryService';
 import { toastService } from '../../../services/toast/toastService';
@@ -84,6 +85,7 @@ const AdminProducts: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!authService.isAuthenticated() || (!isAdmin && !isSeller)) {
@@ -96,12 +98,19 @@ const AdminProducts: React.FC = () => {
   }, []);
 
   const fetchProducts = useCallback(async (pageNum: number = 1) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       setLoading(true);
       setError(null);
       const categoryId = categoryFilter ? parseInt(categoryFilter, 10) : undefined;
       const isActive = statusFilter === 'all' ? undefined : statusFilter === 'active';
       const isVisible = visibilityFilter === 'all' ? undefined : visibilityFilter === 'visible';
+      const signal = controller.signal;
 
       if (isAdmin) {
         const result = await productService.getPaged({
@@ -111,7 +120,9 @@ const AdminProducts: React.FC = () => {
           categoryId,
           isActive,
           isVisible,
+          signal,
         });
+        if (controller.signal.aborted) return;
         setProducts(result.data);
         setTotalPages(result.totalPages);
         setTotalRecords(result.totalRecords);
@@ -122,15 +133,21 @@ const AdminProducts: React.FC = () => {
           search: searchQuery.trim() || undefined,
           categoryId,
           isActive,
+          signal,
         });
+        if (controller.signal.aborted) return;
         setProducts(result.data);
         setTotalPages(result.totalPages);
         setTotalRecords(result.totalRecords);
       }
       setPage(pageNum);
     } catch (err) {
+      if (axios.isCancel(err)) return;
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
     } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
       setLoading(false);
     }
   }, [isAdmin, searchQuery, categoryFilter, statusFilter, visibilityFilter, pageSize]);
@@ -142,6 +159,14 @@ const AdminProducts: React.FC = () => {
   useEffect(() => {
     fetchProducts(1);
   }, [searchQuery, categoryFilter, statusFilter, visibilityFilter, pageSize]);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const fetchCategories = async () => {
     try {

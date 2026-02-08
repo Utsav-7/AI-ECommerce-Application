@@ -186,8 +186,8 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ApiResponse<PagedResponse<ProductListResponse>>>> GetAllProductsPaged(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery(Name = "page")] int page = 1,
+        [FromQuery(Name = "pageSize")] int pageSize = 10,
         [FromQuery] string? search = null,
         [FromQuery] int? categoryId = null,
         [FromQuery] bool? isActive = null,
@@ -292,8 +292,8 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListResponse>>), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ApiResponse<PagedResponse<ProductListResponse>>>> GetMyProductsPaged(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery(Name = "page")] int page = 1,
+        [FromQuery(Name = "pageSize")] int pageSize = 10,
         [FromQuery] string? search = null,
         [FromQuery] int? categoryId = null,
         [FromQuery] bool? isActive = null)
