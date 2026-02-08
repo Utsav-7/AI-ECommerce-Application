@@ -12,6 +12,8 @@ using IUserService = ECommerce.Application.Services.Interfaces.IUserService;
 using UserService = ECommerce.Application.Services.Implementations.UserService;
 using IProductService = ECommerce.Application.Services.Interfaces.IProductService;
 using ProductService = ECommerce.Application.Services.Implementations.ProductService;
+using IInventoryService = ECommerce.Application.Services.Interfaces.IInventoryService;
+using InventoryService = ECommerce.Application.Services.Implementations.InventoryService;
 using ICouponService = ECommerce.Application.Services.Interfaces.ICouponService;
 using CouponService = ECommerce.Application.Services.Implementations.CouponService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -147,6 +149,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IEmailService, ECommerce.Infrastructure.Services.EmailService>();
 

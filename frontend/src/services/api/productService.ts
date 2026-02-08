@@ -1,3 +1,4 @@
+import axios from 'axios';
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../../utils/constants';
 import type { 
@@ -17,6 +18,7 @@ export interface ProductsPagedParams {
   categoryId?: number;
   isActive?: boolean;
   isVisible?: boolean;
+  signal?: AbortSignal;
 }
 
 export const productService = {
@@ -106,10 +108,10 @@ export const productService = {
 
   async getPaged(params: ProductsPagedParams = {}): Promise<PagedResponse<ProductListItem>> {
     try {
-      const { page = 1, pageSize = 10, search, categoryId, isActive, isVisible } = params;
+      const { page = 1, pageSize = 10, search, categoryId, isActive, isVisible, signal } = params;
       const response = await apiClient.get<ApiResponse<PagedResponse<ProductListItem>>>(
         API_ENDPOINTS.PRODUCTS.GET_PAGED,
-        { params: { page, pageSize, search: search || undefined, categoryId, isActive, isVisible } }
+        { params: { page, pageSize, search: search || undefined, categoryId, isActive, isVisible }, signal }
       );
 
       if (response.data.success && response.data.data) {
@@ -118,16 +120,17 @@ export const productService = {
 
       throw new Error(response.data.message || 'Failed to fetch products');
     } catch (error) {
+      if (axios.isCancel(error)) throw error;
       throw new Error(handleApiError(error));
     }
   },
 
   async getMyProductsPaged(params: ProductsPagedParams = {}): Promise<PagedResponse<ProductListItem>> {
     try {
-      const { page = 1, pageSize = 10, search, categoryId, isActive } = params;
+      const { page = 1, pageSize = 10, search, categoryId, isActive, signal } = params;
       const response = await apiClient.get<ApiResponse<PagedResponse<ProductListItem>>>(
         API_ENDPOINTS.PRODUCTS.GET_MY_PRODUCTS_PAGED,
-        { params: { page, pageSize, search: search || undefined, categoryId, isActive } }
+        { params: { page, pageSize, search: search || undefined, categoryId, isActive }, signal }
       );
 
       if (response.data.success && response.data.data) {
@@ -136,6 +139,7 @@ export const productService = {
 
       throw new Error(response.data.message || 'Failed to fetch products');
     } catch (error) {
+      if (axios.isCancel(error)) throw error;
       throw new Error(handleApiError(error));
     }
   },

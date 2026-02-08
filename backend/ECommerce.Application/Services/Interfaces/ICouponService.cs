@@ -6,6 +6,7 @@ namespace ECommerce.Application.Services.Interfaces;
 
 public interface ICouponService
 {
+    Task<int> GetTotalCountAsync();
     Task<CouponResponse> GetByIdAsync(int id);
     Task<IEnumerable<CouponResponse>> GetAllAsync();
     Task<PagedResponse<CouponResponse>> GetAllPagedAsync(string? search, bool? isActive, int? type, int page, int pageSize);

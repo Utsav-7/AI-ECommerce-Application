@@ -17,6 +17,11 @@ public class CategoryService : ICategoryService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await _unitOfWork.Categories.CountAsync(c => !c.IsDeleted);
+    }
+
     public async Task<CategoryResponse> GetByIdAsync(int id)
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(id);

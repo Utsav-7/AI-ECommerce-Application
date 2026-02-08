@@ -286,6 +286,69 @@
   background: #5568d3;
 }
 
+.statCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.statLink {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.statCard:hover .statLink {
+  text-decoration: underline;
+}
+
+.statLinkMuted {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.alertBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.alertBanner span {
+  font-weight: 600;
+  color: #92400e;
+}
+
+.alertLink {
+  color: #b45309;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.alertLink:hover {
+  text-decoration: underline;
+}
+
+.actionCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.primaryButtonMuted {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background: #e2e8f0;
+  color: #64748b;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .actionsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));

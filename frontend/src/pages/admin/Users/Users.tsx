@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate, NavLink, useSearchParams, useLocation } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { userService } from '../../../services/api/userService';
 import { toastService } from '../../../services/toast/toastService';
@@ -27,9 +27,24 @@ interface EditFormData {
 
 const AdminUsers: React.FC = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const userInfo = authService.getUserInfo();
 
-  const [activeTab, setActiveTab] = useState<TabType>('all');
+  const tabParam = searchParams.get('tab') as TabType | null;
+  const fromSellersRoute = pathname.includes('/admin/sellers');
+  const urlTab: TabType =
+    tabParam && ['all', 'users', 'sellers', 'pending'].includes(tabParam)
+      ? tabParam
+      : fromSellersRoute
+        ? 'sellers'
+        : 'all';
+
+  const [activeTab, setActiveTab] = useState<TabType>(urlTab);
+
+  useEffect(() => {
+    setActiveTab(urlTab);
+  }, [urlTab]);
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [pendingSellers, setPendingSellers] = useState<PendingSeller[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);

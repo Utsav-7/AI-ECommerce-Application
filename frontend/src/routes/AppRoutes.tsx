@@ -12,6 +12,7 @@ import AdminProducts from '../pages/admin/Products/Products';
 import AdminAccount from '../pages/admin/Account/Account';
 import SellerDashboard from '../pages/seller/Dashboard/Dashboard';
 import SellerAccount from '../pages/seller/Account/Account';
+import SellerInventory from '../pages/seller/Inventory/Inventory';
 import ForgotPasswordPage from '../pages/ForgotPassword/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPassword/ResetPasswordPage';
 import Account from '../pages/Account/Account';
@@ -117,6 +118,14 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/admin/sellers"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
           path="/admin/products"
           element={
             <AdminRoute>
@@ -155,6 +164,14 @@ const AppRoutes: React.FC = () => {
           element={
             <SellerRoute>
               <AdminProducts />
+            </SellerRoute>
+          }
+        />
+        <Route
+          path="/seller/inventory"
+          element={
+            <SellerRoute>
+              <SellerInventory />
             </SellerRoute>
           }
         />

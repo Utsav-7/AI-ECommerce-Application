@@ -18,6 +18,11 @@ public class CouponService : ICouponService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await _unitOfWork.Coupons.CountAsync(c => !c.IsDeleted);
+    }
+
     public async Task<CouponResponse> GetByIdAsync(int id)
     {
         var coupon = await _unitOfWork.Coupons.GetByIdAsync(id);

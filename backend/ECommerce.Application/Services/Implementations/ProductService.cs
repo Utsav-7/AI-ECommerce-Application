@@ -204,6 +204,29 @@ public class ProductService : IProductService
         product.IsVisible = request.IsVisible;
         product.UpdatedAt = DateTime.UtcNow;
 
+        // Sync quantity to Inventory table (create if missing)
+        var inventories = await _unitOfWork.Inventories.FindAsync(i => i.ProductId == id && !i.IsDeleted);
+        var inventory = inventories.FirstOrDefault();
+        if (inventory != null)
+        {
+            inventory.StockQuantity = request.StockQuantity;
+            inventory.LastRestockedDate = DateTime.UtcNow;
+            inventory.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Inventories.UpdateAsync(inventory);
+        }
+        else
+        {
+            var newInventory = new Inventory
+            {
+                ProductId = id,
+                StockQuantity = request.StockQuantity,
+                LowStockThreshold = 10,
+                LastRestockedDate = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Inventories.AddAsync(newInventory);
+        }
+
         // Update image only if provided
         if (!string.IsNullOrWhiteSpace(request.ImageUrl))
         {
