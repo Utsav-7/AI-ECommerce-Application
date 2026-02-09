@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
     GET_ALL: '/api/Coupons',
     GET_PAGED: '/api/Coupons/paged',
     GET_BY_ID: (id: number) => `/api/Coupons/${id}`,
+    VALIDATE: '/api/Coupons/validate',
     CREATE: '/api/Coupons',
     UPDATE: (id: number) => `/api/Coupons/${id}`,
     DELETE: (id: number) => `/api/Coupons/${id}`,
@@ -71,6 +72,14 @@ export const API_ENDPOINTS = {
     UPDATE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
     REMOVE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
     CLEAR: '/api/Cart',
+  },
+  ADDRESSES: {
+    GET_ALL: '/api/Addresses',
+    GET_BY_ID: (id: number) => `/api/Addresses/${id}`,
+    CREATE: '/api/Addresses',
+    UPDATE: (id: number) => `/api/Addresses/${id}`,
+    DELETE: (id: number) => `/api/Addresses/${id}`,
+    SET_DEFAULT: (id: number) => `/api/Addresses/${id}/set-default`,
   },
 } as const;
 

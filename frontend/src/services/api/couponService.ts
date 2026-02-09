@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../../utils/constants';
-import type { Coupon, CreateCouponRequest, UpdateCouponRequest } from '../../types/coupon.types';
+import type { Coupon, CreateCouponRequest, UpdateCouponRequest, ValidateCouponResponse } from '../../types/coupon.types';
 import type { ApiResponse, PagedResponse } from '../../types/common.types';
 import { handleApiError } from '../../utils/errorHandler';
 
@@ -38,6 +38,21 @@ export const couponService = {
         return response.data.data;
       }
       throw new Error(response.data.message || 'Failed to fetch coupons');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async validateCoupon(code: string, orderAmount: number): Promise<ValidateCouponResponse> {
+    try {
+      const response = await apiClient.get<ApiResponse<ValidateCouponResponse>>(
+        API_ENDPOINTS.COUPONS.VALIDATE,
+        { params: { code: code.trim(), orderAmount } }
+      );
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      throw new Error(response.data.message || 'Invalid coupon');
     } catch (error) {
       throw new Error(handleApiError(error));
     }

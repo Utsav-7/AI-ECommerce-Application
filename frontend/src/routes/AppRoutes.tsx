@@ -18,6 +18,7 @@ import ResetPasswordPage from '../pages/ResetPassword/ResetPasswordPage';
 import Account from '../pages/Account/Account';
 import AboutUs from '../pages/AboutUs/AboutUs';
 import ContactUs from '../pages/ContactUs/ContactUs';
+import Cart from '../pages/Cart/Cart';
 import GuestRoute from './GuestRoute';
 import AdminRoute from './AdminRoute';
 import SellerRoute from './SellerRoute';
@@ -71,6 +72,7 @@ const AppRoutes: React.FC = () => {
 
         {/* Public Routes - no auth required */}
         <Route path="/products" element={<Products />} />
+        <Route path="/cart" element={<Cart />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
 

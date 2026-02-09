@@ -1,17 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
+import { cartService } from '../../../services/api/cartService';
 import { toastService } from '../../../services/toast/toastService';
 import { getDashboardPathByUserInfo, getAccountPathByUserInfo } from '../../../utils/routeHelpers';
 import styles from './Navbar.module.css';
 
+const CART_UPDATED_EVENT = 'cartUpdated';
+
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const isAuthenticated = authService.isAuthenticated();
   const userInfo = isAuthenticated ? authService.getUserInfo() : null;
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const loadCartCount = async () => {
+    const count = await cartService.getCartCount();
+    setCartCount(count);
+  };
+
+  useEffect(() => {
+    loadCartCount();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      loadCartCount();
+    };
+    window.addEventListener(CART_UPDATED_EVENT, handler);
+    return () => window.removeEventListener(CART_UPDATED_EVENT, handler);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -85,7 +106,15 @@ const Navbar: React.FC = () => {
           <Link to="/contact" className={styles.menuItem} onClick={() => setIsMenuOpen(false)}>
             Contact
           </Link>
-          
+          <Link to="/cart" className={styles.menuItem} onClick={() => setIsMenuOpen(false)}>
+            Cart
+            {cartCount > 0 && (
+              <span className={styles.cartBadge} aria-label={`${cartCount} items in cart`}>
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </Link>
+
           {isAuthenticated ? (
             <>
               <Link 

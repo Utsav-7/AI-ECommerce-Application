@@ -6,16 +6,19 @@ using ECommerce.Core.Entities;
 using ECommerce.Core.Enums;
 using ECommerce.Core.Exceptions;
 using ECommerce.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Application.Services.Implementations;
 
 public class CouponService : ICouponService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<CouponService> _logger;
 
-    public CouponService(IUnitOfWork unitOfWork)
+    public CouponService(IUnitOfWork unitOfWork, ILogger<CouponService> logger)
     {
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<int> GetTotalCountAsync()
@@ -120,6 +123,60 @@ public class CouponService : ICouponService
             throw new NotFoundException("Coupon", id);
         await _unitOfWork.Coupons.DeleteAsync(coupon);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<ValidateCouponResponse> ValidateCouponAsync(string code, decimal orderAmount)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return new ValidateCouponResponse { Valid = false, Message = "Coupon code is required." };
+
+        var coupon = await _unitOfWork.Coupons.GetByCodeAsync(code.Trim());
+        if (coupon == null)
+            return new ValidateCouponResponse { Valid = false, Message = "Invalid coupon code." };
+
+        if (!coupon.IsActive)
+            return new ValidateCouponResponse { Valid = false, Message = "This coupon is no longer active." };
+
+        var now = DateTime.UtcNow;
+        if (now < coupon.ValidFrom)
+            return new ValidateCouponResponse { Valid = false, Message = "This coupon is not yet valid." };
+        if (now > coupon.ValidTo)
+            return new ValidateCouponResponse { Valid = false, Message = "This coupon has expired." };
+
+        if (coupon.UsageLimit > 0 && coupon.UsedCount >= coupon.UsageLimit)
+            return new ValidateCouponResponse { Valid = false, Message = "This coupon has reached its usage limit." };
+
+        if (coupon.MinPurchaseAmount.HasValue && orderAmount < coupon.MinPurchaseAmount.Value)
+            return new ValidateCouponResponse
+            {
+                Valid = false,
+                Message = $"Minimum order amount of ₹{coupon.MinPurchaseAmount.Value:N0} required for this coupon."
+            };
+
+        decimal discountAmount;
+        if (coupon.Type == CouponType.Percentage)
+        {
+            discountAmount = Math.Round(orderAmount * (coupon.Value / 100m), 2);
+            if (coupon.MaxDiscountAmount.HasValue && discountAmount > coupon.MaxDiscountAmount.Value)
+                discountAmount = coupon.MaxDiscountAmount.Value;
+        }
+        else
+        {
+            discountAmount = coupon.Value;
+            if (coupon.MaxDiscountAmount.HasValue && discountAmount > coupon.MaxDiscountAmount.Value)
+                discountAmount = coupon.MaxDiscountAmount.Value;
+        }
+
+        if (discountAmount > orderAmount)
+            discountAmount = orderAmount;
+
+        return new ValidateCouponResponse
+        {
+            Valid = true,
+            DiscountAmount = discountAmount,
+            Message = $"You save ₹{discountAmount:N0}",
+            Code = coupon.Code
+        };
     }
 
     private static CouponResponse MapToResponse(Coupon coupon)

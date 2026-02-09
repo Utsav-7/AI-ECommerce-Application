@@ -3,13 +3,15 @@ import type { ApiResponse } from '../types/common.types';
 
 export const handleApiError = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
-    if (error.response?.data) {
-      const apiResponse = error.response.data as ApiResponse<any>;
-      if (apiResponse.message) {
-        return apiResponse.message;
+    if (error.response?.data && typeof error.response.data === 'object') {
+      const data = error.response.data as Record<string, unknown>;
+      const message = data.message ?? data.Message;
+      if (typeof message === 'string' && message) {
+        return message;
       }
-      if (apiResponse.errors && apiResponse.errors.length > 0) {
-        return apiResponse.errors.join(', ');
+      const errors = data.errors ?? data.Errors;
+      if (Array.isArray(errors) && errors.length > 0) {
+        return errors.map(String).join(', ');
       }
     }
     if (error.message) {

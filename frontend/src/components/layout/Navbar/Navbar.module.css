@@ -69,6 +69,23 @@
   width: 100%;
 }
 
+.cartBadge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #e53e3e;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .loginBtn {
   background: #667eea;
   color: white;

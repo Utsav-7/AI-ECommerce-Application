@@ -37,3 +37,10 @@ export interface CreateCouponRequest {
 }
 
 export interface UpdateCouponRequest extends CreateCouponRequest {}
+
+export interface ValidateCouponResponse {
+  valid: boolean;
+  discountAmount: number;
+  message: string;
+  code?: string;
+}

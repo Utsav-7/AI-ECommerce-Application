@@ -16,6 +16,10 @@ using IInventoryService = ECommerce.Application.Services.Interfaces.IInventorySe
 using InventoryService = ECommerce.Application.Services.Implementations.InventoryService;
 using ICouponService = ECommerce.Application.Services.Interfaces.ICouponService;
 using CouponService = ECommerce.Application.Services.Implementations.CouponService;
+using ICartService = ECommerce.Application.Services.Interfaces.ICartService;
+using CartService = ECommerce.Application.Services.Implementations.CartService;
+using IAddressService = ECommerce.Application.Services.Interfaces.IAddressService;
+using AddressService = ECommerce.Application.Services.Implementations.AddressService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -151,6 +155,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IEmailService, ECommerce.Infrastructure.Services.EmailService>();
 
 var app = builder.Build();

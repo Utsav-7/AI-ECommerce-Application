@@ -27,4 +27,11 @@ public class InventoryRepository : Repository<Inventory>, IInventoryRepository
             .Where(i => i.Product.SellerId == sellerId && !i.IsDeleted && i.StockQuantity <= i.LowStockThreshold)
             .CountAsync();
     }
+
+    public async Task<Inventory?> GetByProductIdAsync(int productId)
+    {
+        return await _dbSet
+            .Include(i => i.Product)
+            .FirstOrDefaultAsync(i => i.ProductId == productId && !i.IsDeleted);
+    }
 }
