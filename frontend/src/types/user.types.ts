@@ -49,4 +49,5 @@ export interface DashboardStats {
   totalProducts: number;
   totalCategories: number;
   totalCoupons: number;
+  totalOrders: number;
 }

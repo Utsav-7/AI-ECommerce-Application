@@ -25,7 +25,7 @@ const Account: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'addresses'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'addresses' | 'orders'>('profile');
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressLoading, setAddressLoading] = useState(false);
@@ -328,12 +328,20 @@ const Account: React.FC = () => {
                 Security
               </button>
               {isCustomerUser && (
-                <button
-                  className={`${styles.tabBtn} ${activeTab === 'addresses' ? styles.tabActive : ''}`}
-                  onClick={() => setActiveTab('addresses')}
-                >
-                  Addresses
-                </button>
+                <>
+                  <button
+                    className={`${styles.tabBtn} ${activeTab === 'orders' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('orders')}
+                  >
+                    Orders
+                  </button>
+                  <button
+                    className={`${styles.tabBtn} ${activeTab === 'addresses' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('addresses')}
+                  >
+                    Addresses
+                  </button>
+                </>
               )}
             </div>
 
@@ -356,6 +364,18 @@ const Account: React.FC = () => {
                       <span className={styles.infoValue}>{user.email}</span>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'orders' && isCustomerUser && (
+              <div className={styles.tabContent}>
+                <div className={styles.infoCard}>
+                  <h3>Order History</h3>
+                  <p>View and track your orders.</p>
+                  <Link to="/account/orders" className={styles.ordersLink}>
+                    View All Orders →
+                  </Link>
                 </div>
               </div>
             )}

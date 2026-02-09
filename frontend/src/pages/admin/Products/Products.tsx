@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate, Link, NavLink } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import axios from 'axios';
 import { productService } from '../../../services/api/productService';
@@ -175,12 +175,6 @@ const AdminProducts: React.FC = () => {
     } catch (err) {
       console.error('Failed to fetch categories:', err);
     }
-  };
-
-  const handleLogout = () => {
-    authService.logout();
-    toastService.success('Logged out successfully');
-    navigate('/');
   };
 
   // Image handling
@@ -454,57 +448,8 @@ const AdminProducts: React.FC = () => {
 
   if (!userInfo) return null;
 
-  const navItems = isAdmin ? [
-    { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/admin/users', icon: '👥', label: 'Users' },
-    { path: '/admin/products', icon: '📦', label: 'Products' },
-    { path: '/admin/orders', icon: '🛒', label: 'Orders' },
-    { path: '/admin/categories', icon: '📁', label: 'Categories' },
-    { path: '/admin/sellers', icon: '🏪', label: 'Sellers' },
-    { path: '/admin/coupons', icon: '🎫', label: 'Coupons' },
-    { path: '/admin/reports', icon: '📈', label: 'Reports' },
-    { path: '/admin/account', icon: '👤', label: 'Account' },
-  ] : [
-    { path: '/seller/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/seller/products', icon: '📦', label: 'Products' },
-    { path: '/seller/inventory', icon: '📋', label: 'Inventory' },
-    { path: '/seller/orders', icon: '🛒', label: 'Orders' },
-    { path: '/seller/sales', icon: '💰', label: 'Sales' },
-    { path: '/seller/reports', icon: '📈', label: 'Reports' },
-    { path: '/seller/settings', icon: '⚙️', label: 'Settings' },
-    { path: '/seller/account', icon: '👤', label: 'Account' },
-  ];
-
   return (
-    <div className={styles.dashboardContainer}>
-      {/* Left Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>{isAdmin ? 'Admin Panel' : 'Seller Panel'}</h2>
-        </div>
-        <nav className={styles.sidebarNav}>
-          {navItems.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end
-              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}
-            >
-              <span className={styles.navIcon}>{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            <span className={styles.navIcon}>🚪</span>
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className={styles.mainContent}>
+    <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <h1 className={styles.pageTitle}>{isAdmin ? 'Product Management' : 'My Products'}</h1>
           <div className={styles.headerActions}>
@@ -742,7 +687,6 @@ const AdminProducts: React.FC = () => {
             )}
           </div>
         </div>
-      </main>
 
       {/* Create/Edit Modal */}
       {(isCreateModalOpen || isEditModalOpen) && (

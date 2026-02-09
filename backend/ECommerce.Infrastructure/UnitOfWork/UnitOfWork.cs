@@ -17,6 +17,8 @@ public class UnitOfWork : IUnitOfWork
     private ICouponRepository? _coupons;
     private ICartRepository? _carts;
     private IAddressRepository? _addresses;
+    private IOrderRepository? _orders;
+    private IPaymentRepository? _payments;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -83,6 +85,24 @@ public class UnitOfWork : IUnitOfWork
         {
             _addresses ??= new AddressRepository(_context);
             return _addresses;
+        }
+    }
+
+    public IOrderRepository Orders
+    {
+        get
+        {
+            _orders ??= new OrderRepository(_context);
+            return _orders;
+        }
+    }
+
+    public IPaymentRepository Payments
+    {
+        get
+        {
+            _payments ??= new PaymentRepository(_context);
+            return _payments;
         }
     }
 

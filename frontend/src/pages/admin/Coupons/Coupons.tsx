@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { couponService } from '../../../services/api/couponService';
 import { toastService } from '../../../services/toast/toastService';
@@ -94,12 +94,6 @@ const AdminCoupons: React.FC = () => {
     if (page > 1) fetchCoupons(page);
   }, [page]);
 
-  const handleLogout = () => {
-    authService.logout();
-    toastService.success('Logged out successfully');
-    navigate('/');
-  };
-
   const openCreateModal = () => {
     setEditingCoupon(null);
     setFormData({
@@ -191,48 +185,7 @@ const AdminCoupons: React.FC = () => {
   if (!userInfo) return null;
 
   return (
-    <div className={styles.dashboardContainer}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>Admin Panel</h2>
-        </div>
-        <nav className={styles.sidebarNav}>
-          <NavLink to="/admin/dashboard" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📊</span> Dashboard
-          </NavLink>
-          <NavLink to="/admin/users" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👥</span> Users
-          </NavLink>
-          <NavLink to="/admin/products" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📦</span> Products
-          </NavLink>
-          <NavLink to="/admin/orders" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🛒</span> Orders
-          </NavLink>
-          <NavLink to="/admin/categories" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📁</span> Categories
-          </NavLink>
-          <NavLink to="/admin/sellers" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🏪</span> Sellers
-          </NavLink>
-          <NavLink to="/admin/coupons" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🎫</span> Coupons
-          </NavLink>
-          <NavLink to="/admin/reports" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📈</span> Reports
-          </NavLink>
-          <NavLink to="/admin/account" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👤</span> Account
-          </NavLink>
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            <span className={styles.navIcon}>🚪</span> Logout
-          </button>
-        </div>
-      </aside>
-
-      <main className={styles.mainContent}>
+    <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <h1 className={styles.pageTitle}>Coupon Management</h1>
           <div className={styles.userInfo}>
@@ -356,7 +309,6 @@ const AdminCoupons: React.FC = () => {
             )}
           </div>
         </div>
-      </main>
 
       {isModalOpen && (
         <div className={styles.modalOverlay} onClick={closeModal}>

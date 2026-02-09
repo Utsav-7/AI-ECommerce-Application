@@ -1,16 +1,16 @@
 .navbar {
-  background: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -21,62 +21,61 @@
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  color: #1a202c;
-  font-size: 1.5rem;
-  font-weight: 700;
   transition: transform 0.2s;
 }
 
 .logo:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
-.logo svg {
-  flex-shrink: 0;
+.logoIcon {
+  width: 40px;
+  height: 40px;
+  color: #f59e0b;
+}
+
+.logoIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.logoText {
+  color: #f8fafc;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .menu {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  list-style: none;
+  gap: 0.5rem;
 }
 
 .menuItem {
-  text-decoration: none;
-  color: #4a5568;
-  font-weight: 500;
-  transition: color 0.2s;
   position: relative;
+  padding: 0.6rem 1rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
 }
 
 .menuItem:hover {
-  color: #667eea;
-}
-
-.menuItem::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: #667eea;
-  transition: width 0.3s;
-}
-
-.menuItem:hover::after {
-  width: 100%;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .cartBadge {
   position: absolute;
-  top: -8px;
-  right: -12px;
+  top: -2px;
+  right: -2px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  background: #e53e3e;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
   font-size: 0.7rem;
   font-weight: 700;
@@ -84,38 +83,43 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
 }
 
 .loginBtn {
-  background: #667eea;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.loginBtn:hover {
-  background: #5568d3;
-  transform: translateY(-2px);
-}
-
-.registerBtn {
+  padding: 0.6rem 1.25rem;
   background: transparent;
-  color: #667eea;
-  padding: 0.75rem 1.5rem;
-  border: 2px solid #667eea;
+  color: #f59e0b;
+  border: 2px solid #f59e0b;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
+  font-size: 0.95rem;
   transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
+.loginBtn:hover {
+  background: #f59e0b;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.registerBtn {
+  padding: 0.6rem 1.25rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
 .registerBtn:hover {
-  background: #667eea;
-  color: white;
-  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5);
+  transform: translateY(-1px);
 }
 
 .userMenuContainer {
@@ -126,18 +130,24 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.userAvatarBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .userAvatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,18 +157,19 @@
 }
 
 .userAvatarBtn:hover .userAvatar {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.5);
 }
 
 .userDropdown {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  min-width: 250px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  min-width: 260px;
   z-index: 1000;
   animation: slideDown 0.2s ease;
   overflow: hidden;
@@ -167,7 +178,7 @@
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -177,24 +188,24 @@
 
 .userDropdownHeader {
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
 .userDropdownAvatar {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(15, 23, 42, 0.3);
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
@@ -221,7 +232,7 @@
 
 .userDropdownDivider {
   height: 1px;
-  background: #e2e8f0;
+  background: rgba(255, 255, 255, 0.1);
   margin: 0.5rem 0;
 }
 
@@ -229,11 +240,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: #4a5568;
+  padding: 0.85rem 1rem;
+  color: #cbd5e1;
   text-decoration: none;
-  font-size: 0.9rem;
-  transition: background 0.2s;
+  font-size: 0.95rem;
+  transition: background 0.2s, color 0.2s;
   border: none;
   background: none;
   width: 100%;
@@ -243,32 +254,61 @@
 }
 
 .userDropdownItem:hover {
-  background: #f7fafc;
-  color: #1a202c;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
 }
 
 .userDropdownItem span {
   font-size: 1.1rem;
-  width: 20px;
+  width: 22px;
   text-align: center;
 }
 
 .menuToggle {
   display: none;
   flex-direction: column;
-  gap: 5px;
-  background: none;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
   border: none;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 5px;
+  padding: 10px;
+  transition: background 0.2s;
+}
+
+.menuToggle:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .menuToggle span {
-  width: 25px;
-  height: 3px;
-  background: #1a202c;
-  border-radius: 3px;
+  width: 24px;
+  height: 2.5px;
+  background: #f8fafc;
+  border-radius: 2px;
   transition: all 0.3s;
+}
+
+.menuToggleOpen span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.menuToggleOpen span:nth-child(2) {
+  opacity: 0;
+}
+
+.menuToggleOpen span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+@media (max-width: 992px) {
+  .menu {
+    gap: 0.25rem;
+  }
+
+  .menuItem {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -278,28 +318,48 @@
 
   .menu {
     position: fixed;
-    top: 70px;
-    left: 0;
+    top: 0;
     right: 0;
-    background: white;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
     flex-direction: column;
+    justify-content: center;
     padding: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transform: translateX(-100%);
-    transition: transform 0.3s;
-    gap: 1.5rem;
+    gap: 0.5rem;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
   }
 
   .menuOpen {
     transform: translateX(0);
   }
 
-  .menuItem,
-  .loginBtn,
-  .registerBtn,
-  .userMenuContainer {
+  .menuItem {
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
+    border-radius: 10px;
     width: 100%;
     text-align: center;
+  }
+
+  .menuItem:hover {
+    background: rgba(245, 158, 11, 0.15);
+  }
+
+  .loginBtn,
+  .registerBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .userMenuContainer {
+    width: 100%;
+  }
+
+  .userAvatarBtn {
+    width: 100%;
+    justify-content: center;
     padding: 1rem;
   }
 
@@ -307,6 +367,7 @@
     position: static;
     width: 100%;
     margin-top: 1rem;
+    max-height: 200px;
   }
 
   .container {

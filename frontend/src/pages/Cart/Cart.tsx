@@ -26,6 +26,7 @@ interface AppliedCoupon {
 export default function Cart() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [qtyInputs, setQtyInputs] = useState<Record<number, string>>({});
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -81,6 +82,11 @@ export default function Cart() {
       toastService.error(`Maximum available: ${maxQty}`);
       return;
     }
+    setQtyInputs((prev) => {
+      const next = { ...prev };
+      delete next[item.id];
+      return next;
+    });
     try {
       const isGuest = !isCustomer;
       const updated = await cartService.updateQuantity(item.id, newQuantity, isGuest);
@@ -88,6 +94,28 @@ export default function Cart() {
       triggerCartUpdated();
     } catch (e) {
       toastService.error(e instanceof Error ? e.message : 'Failed to update quantity');
+    }
+  };
+
+  const handleQuantityBlur = (item: CartItemResponse) => {
+    const raw = qtyInputs[item.id];
+    if (raw === undefined) return;
+    const parsed = parseInt(raw, 10);
+    const maxQty = isCustomer ? item.availableStock : 999;
+    const validQty = isNaN(parsed) || parsed < 1 ? 1 : Math.min(parsed, maxQty);
+    setQtyInputs((prev) => {
+      const next = { ...prev };
+      delete next[item.id];
+      return next;
+    });
+    if (validQty !== item.quantity) {
+      handleUpdateQuantity(item, validQty);
+    }
+  };
+
+  const handleQuantityKeyDown = (e: React.KeyboardEvent, item: CartItemResponse) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
     }
   };
 
@@ -154,7 +182,9 @@ export default function Cart() {
       navigate('/login', { state: { from: '/cart' } });
       return;
     }
-    navigate('/checkout');
+    navigate('/checkout', {
+      state: appliedCoupon ? { couponCode: appliedCoupon.code, discountAmount: appliedCoupon.discountAmount } : undefined,
+    });
   };
 
   if (loading) {
@@ -235,7 +265,25 @@ export default function Cart() {
                       >
                         −
                       </button>
-                      <span className={styles.quantityValue}>{item.quantity}</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className={styles.quantityInput}
+                        value={qtyInputs[item.id] ?? String(item.quantity)}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, '');
+                          setQtyInputs((prev) => ({ ...prev, [item.id]: v }));
+                        }}
+                        onBlur={() => handleQuantityBlur(item)}
+                        onKeyDown={(e) => handleQuantityKeyDown(e, item)}
+                        onFocus={(e) => {
+                          if (qtyInputs[item.id] === undefined) {
+                            setQtyInputs((prev) => ({ ...prev, [item.id]: String(item.quantity) }));
+                          }
+                          e.target.select();
+                        }}
+                        aria-label="Quantity"
+                      />
                       <button
                         type="button"
                         className={styles.quantityBtn}

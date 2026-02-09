@@ -34,6 +34,7 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   const navigate = useNavigate();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [qtyInput, setQtyInput] = useState('1');
 
   const allImages: string[] = product
     ? [
@@ -51,6 +52,7 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   useEffect(() => {
     setSelectedImageIndex(0);
     setQuantity(1);
+    setQtyInput('1');
   }, [product?.id]);
 
   useEffect(() => {
@@ -100,6 +102,13 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
 
   const minQty = 1;
   const maxQty = 99;
+
+  const applyQuantityFromInput = () => {
+    const parsed = parseInt(qtyInput.replace(/\D/g, ''), 10);
+    const valid = isNaN(parsed) || parsed < minQty ? minQty : Math.min(parsed, maxQty);
+    setQuantity(valid);
+    setQtyInput(String(valid));
+  };
 
   if (!isOpen || !product) return null;
 
@@ -199,17 +208,39 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
                 <button
                   type="button"
                   className={styles.quantityBtn}
-                  onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
+                  onClick={() => {
+                    const q = Math.max(minQty, quantity - 1);
+                    setQuantity(q);
+                    setQtyInput(String(q));
+                  }}
                   disabled={quantity <= minQty || !product.inStock}
                   aria-label="Decrease quantity"
                 >
                   −
                 </button>
-                <span className={styles.quantityValue}>{quantity}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.quantityInput}
+                  value={qtyInput}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    setQtyInput(v || '');
+                  }}
+                  onBlur={applyQuantityFromInput}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                  onFocus={(e) => e.target.select()}
+                  disabled={!product.inStock}
+                  aria-label="Quantity"
+                />
                 <button
                   type="button"
                   className={styles.quantityBtn}
-                  onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                  onClick={() => {
+                    const q = Math.min(maxQty, quantity + 1);
+                    setQuantity(q);
+                    setQtyInput(String(q));
+                  }}
                   disabled={quantity >= maxQty || !product.inStock}
                   aria-label="Increase quantity"
                 >

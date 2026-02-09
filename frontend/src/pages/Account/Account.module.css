@@ -74,6 +74,18 @@
   text-decoration: underline;
 }
 
+.ordersLink {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #667eea;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ordersLink:hover {
+  text-decoration: underline;
+}
+
 .accountContainer {
   flex: 1;
   max-width: 800px;

@@ -73,6 +73,18 @@ export const API_ENDPOINTS = {
     REMOVE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
     CLEAR: '/api/Cart',
   },
+  ORDERS: {
+    PLACE: '/api/Orders',
+    GET_MY_ORDERS: '/api/Orders/my-orders',
+    GET_BY_ID: (id: number) => `/api/Orders/${id}`,
+    GET_ADMIN: '/api/Orders/admin',
+    GET_SELLER: '/api/Orders/seller',
+    UPDATE_STATUS: (id: number) => `/api/Orders/${id}/status`,
+  },
+  REPORTS: {
+    ADMIN: '/api/Reports/admin',
+    SELLER: '/api/Reports/seller',
+  },
   ADDRESSES: {
     GET_ALL: '/api/Addresses',
     GET_BY_ID: (id: number) => `/api/Addresses/${id}`,

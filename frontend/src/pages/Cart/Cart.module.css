@@ -128,11 +128,27 @@
   cursor: not-allowed;
 }
 
-.quantityValue {
+.quantityValue,
+.quantityInput {
   min-width: 2.5rem;
+  width: 2.5rem;
   text-align: center;
   font-weight: 600;
   color: #1a202c;
+  font-size: 1rem;
+}
+
+.quantityInput {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.25rem;
+  background: white;
+}
+
+.quantityInput:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 .itemSubtotal {
