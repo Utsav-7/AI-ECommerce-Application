@@ -64,6 +64,13 @@ export const API_ENDPOINTS = {
     CREATE: '/api/Coupons',
     UPDATE: (id: number) => `/api/Coupons/${id}`,
     DELETE: (id: number) => `/api/Coupons/${id}`,
+  },  
+  CART: {
+    GET: '/api/Cart',
+    ADD_ITEM: '/api/Cart/items',
+    UPDATE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
+    REMOVE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
+    CLEAR: '/api/Cart',
   },
 } as const;
 
@@ -71,5 +78,6 @@ export const STORAGE_KEYS = {
   TOKEN: 'auth_token',
   REFRESH_TOKEN: 'refresh_token',
   USER: 'user_info',
+  GUEST_CART: 'guest_cart',
 } as const;
 
