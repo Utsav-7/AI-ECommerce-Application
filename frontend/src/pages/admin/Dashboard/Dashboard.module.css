@@ -93,7 +93,15 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* Main Content */
+/* Page wrapper - used when inside AdminLayout */
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Main Content - kept for backward compatibility */
 .mainContent {
   flex: 1;
   margin-left: 280px;

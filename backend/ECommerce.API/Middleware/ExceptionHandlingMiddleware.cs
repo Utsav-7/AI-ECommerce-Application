@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using ECommerce.Core.DTOs.Response.Common;
 using ECommerce.Core.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.API.Middleware;
 
@@ -9,11 +10,13 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -29,7 +32,7 @@ public class ExceptionHandlingMiddleware
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var code = HttpStatusCode.InternalServerError;
         var message = "An error occurred while processing your request.";
@@ -55,6 +58,16 @@ public class ExceptionHandlingMiddleware
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)code;
                 return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+
+        if (exception is DbUpdateException dbEx)
+        {
+            message = dbEx.InnerException?.Message ?? dbEx.Message;
+            code = HttpStatusCode.BadRequest;
+        }
+        else if (_env.IsDevelopment())
+        {
+            message = exception.ToString();
         }
 
         var errorResponse = ApiResponse<object>.ErrorResponse(message);

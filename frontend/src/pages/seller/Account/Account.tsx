@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { toastService } from '../../../services/toast/toastService';
 import { UserRoleValues } from '../../../types/auth.types';
@@ -44,65 +44,10 @@ const SellerAccount: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    toastService.success('Logged out successfully');
-    navigate('/');
-  };
-
   if (!userInfo) return null;
 
   return (
-    <div className={styles.dashboardContainer}>
-      {/* Left Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>Seller Panel</h2>
-        </div>
-        <nav className={styles.sidebarNav}>
-          <NavLink to="/seller/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📊</span>
-            Dashboard
-          </NavLink>
-          <NavLink to="/seller/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📦</span>
-            Products
-          </NavLink>
-          <NavLink to="/seller/inventory" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📋</span>
-            Inventory
-          </NavLink>
-          <NavLink to="/seller/orders" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🛒</span>
-            Orders
-          </NavLink>
-          <NavLink to="/seller/sales" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>💰</span>
-            Sales
-          </NavLink>
-          <NavLink to="/seller/reports" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📈</span>
-            Reports
-          </NavLink>
-          <NavLink to="/seller/settings" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>⚙️</span>
-            Settings
-          </NavLink>
-          <NavLink to="/seller/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👤</span>
-            Account
-          </NavLink>
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            <span className={styles.navIcon}>🚪</span>
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className={styles.mainContent}>
+    <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <h1 className={styles.pageTitle}>My Account</h1>
           <div className={styles.userInfo}>
@@ -128,7 +73,6 @@ const SellerAccount: React.FC = () => {
             <AccountContent user={user} />
           ) : null}
         </div>
-      </main>
     </div>
   );
 };

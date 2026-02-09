@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate, NavLink, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   BarChart,
   Bar,
@@ -18,9 +18,10 @@ import { userService } from '../../../services/api/userService';
 import { toastService } from '../../../services/toast/toastService';
 import { UserRoleValues } from '../../../types/auth.types';
 import type { DashboardStats } from '../../../types/user.types';
+import { AdminReportSection } from '../../../components/common/ReportSection';
 import styles from './Dashboard.module.css';
 
-const POLL_INTERVAL_MS = 30000;
+const POLL_INTERVAL_MS = 300000; // 5 minutes
 
 const isAdminRole = (role: string | number | undefined): boolean => {
   if (!role) return false;
@@ -59,9 +60,6 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
-
-  useEffect(() => {
     const interval = setInterval(fetchStats, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [fetchStats]);
@@ -70,12 +68,6 @@ const AdminDashboard: React.FC = () => {
     return null;
   }
 
-  const handleLogout = () => {
-    authService.logout();
-    toastService.success('Logged out successfully');
-    navigate('/');
-  };
-
   const barChartData = stats
     ? [
         { name: 'Users', value: stats.totalUsers, fill: CHART_COLORS[0] },
@@ -83,6 +75,7 @@ const AdminDashboard: React.FC = () => {
         { name: 'Products', value: stats.totalProducts, fill: CHART_COLORS[2] },
         { name: 'Categories', value: stats.totalCategories, fill: CHART_COLORS[3] },
         { name: 'Coupons', value: stats.totalCoupons, fill: CHART_COLORS[4] },
+        { name: 'Orders', value: stats.totalOrders, fill: CHART_COLORS[5] },
       ]
     : [];
 
@@ -93,54 +86,12 @@ const AdminDashboard: React.FC = () => {
         { name: 'Products', value: stats.totalProducts },
         { name: 'Categories', value: stats.totalCategories },
         { name: 'Coupons', value: stats.totalCoupons },
+        { name: 'Orders', value: stats.totalOrders },
       ].filter((d) => d.value > 0)
     : [];
 
   return (
-    <div className={styles.dashboardContainer}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>Admin Panel</h2>
-        </div>
-        <nav className={styles.sidebarNav}>
-          <NavLink to="/admin/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📊</span>
-            Dashboard
-          </NavLink>
-          <NavLink to="/admin/users" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👥</span>
-            Users
-          </NavLink>
-          <NavLink to="/admin/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📦</span>
-            Products
-          </NavLink>
-          <NavLink to="/admin/categories" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📁</span>
-            Categories
-          </NavLink>
-          <NavLink to="/admin/sellers" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🏪</span>
-            Sellers
-          </NavLink>
-          <NavLink to="/admin/coupons" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🎫</span>
-            Coupons
-          </NavLink>
-          <NavLink to="/admin/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👤</span>
-            Account
-          </NavLink>
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            <span className={styles.navIcon}>🚪</span>
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      <main className={styles.mainContent}>
+    <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <h1 className={styles.pageTitle}>Admin Dashboard</h1>
           <div className={styles.userInfo}>
@@ -154,7 +105,7 @@ const AdminDashboard: React.FC = () => {
         <div className={styles.content}>
           <div className={styles.welcomeSection}>
             <h2>Welcome, Administrator!</h2>
-            <p className={styles.subtitle}>Manage your e-commerce platform · Data refreshes every 30s</p>
+            <p className={styles.subtitle}>Manage your e-commerce platform · Data refreshes every 5 min</p>
           </div>
 
           {loading ? (
@@ -236,7 +187,20 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                 </Link>
+
+                <Link to="/admin/orders" className={styles.statCardLink}>
+                  <div className={styles.statCard}>
+                    <div className={styles.statIcon}>🛒</div>
+                    <div className={styles.statContent}>
+                      <h3>Orders</h3>
+                      <p className={styles.statNumber}>{stats?.totalOrders ?? 0}</p>
+                      <span className={styles.statLink}>Manage Orders →</span>
+                    </div>
+                  </div>
+                </Link>
               </div>
+
+              <AdminReportSection />
 
               <div className={styles.chartsSection}>
                 <div className={styles.chartCard}>
@@ -354,11 +318,44 @@ const AdminDashboard: React.FC = () => {
                     <span className={styles.primaryButton}>Go to Coupons →</span>
                   </div>
                 </Link>
+
+                <Link to="/admin/orders" className={styles.managementCardLink}>
+                  <div className={styles.managementCard}>
+                    <div className={styles.cardHeader}>
+                      <h3>Order Management</h3>
+                      <span className={styles.badge}>Admin Only</span>
+                    </div>
+                    <p>View and manage all platform orders</p>
+                    <ul className={styles.featureList}>
+                      <li>View all orders</li>
+                      <li>Update order status</li>
+                      <li>Add tracking numbers</li>
+                      <li>Mark as shipped or delivered</li>
+                    </ul>
+                    <span className={styles.primaryButton}>Go to Order Management →</span>
+                  </div>
+                </Link>
+
+                <Link to="/admin/account" className={styles.managementCardLink}>
+                  <div className={styles.managementCard}>
+                    <div className={styles.cardHeader}>
+                      <h3>Account</h3>
+                      <span className={styles.badge}>Admin Only</span>
+                    </div>
+                    <p>Manage your admin profile and account settings</p>
+                    <ul className={styles.featureList}>
+                      <li>View profile details</li>
+                      <li>Update personal information</li>
+                      <li>Change password</li>
+                      <li>Account preferences</li>
+                    </ul>
+                    <span className={styles.primaryButton}>Go to Account →</span>
+                  </div>
+                </Link>
               </div>
             </>
           )}
         </div>
-      </main>
     </div>
   );
 };

@@ -16,15 +16,28 @@ using IInventoryService = ECommerce.Application.Services.Interfaces.IInventorySe
 using InventoryService = ECommerce.Application.Services.Implementations.InventoryService;
 using ICouponService = ECommerce.Application.Services.Interfaces.ICouponService;
 using CouponService = ECommerce.Application.Services.Implementations.CouponService;
+using ICartService = ECommerce.Application.Services.Interfaces.ICartService;
+using CartService = ECommerce.Application.Services.Implementations.CartService;
+using IAddressService = ECommerce.Application.Services.Interfaces.IAddressService;
+using AddressService = ECommerce.Application.Services.Implementations.AddressService;
+using IOrderService = ECommerce.Application.Services.Interfaces.IOrderService;
+using OrderService = ECommerce.Application.Services.Implementations.OrderService;
+using IReportService = ECommerce.Application.Services.Interfaces.IReportService;
+using ReportService = ECommerce.Application.Services.Implementations.ReportService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger/OpenAPI
@@ -151,6 +164,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IEmailService, ECommerce.Infrastructure.Services.EmailService>();
 
 var app = builder.Build();

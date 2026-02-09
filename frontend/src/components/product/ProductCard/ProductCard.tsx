@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { toastService } from '../../../services/toast/toastService';
+import { cartService } from '../../../services/api/cartService';
 import type { ProductPublic } from '../../../types/product.types';
 import styles from './ProductCard.module.css';
+
+const CART_UPDATED_EVENT = 'cartUpdated';
 
 interface ProductCardProps {
   product: ProductPublic;
@@ -58,12 +61,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) =>
     }
   };
 
-  const handleAddToCartClick = (e: React.MouseEvent) => {
+  const handleAddToCartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!product.inStock) return;
-    toastService.success(`${product.name} added to cart`);
-    // Cart integration can be added here
+    const displayPrice = product.discountPrice ?? product.price;
+    try {
+      await cartService.addItem(product.id, 1, {
+        productName: product.name,
+        imageUrl: product.imageUrl,
+        unitPrice: displayPrice,
+      });
+      toastService.success(`${product.name} added to cart`);
+      window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT));
+    } catch (err) {
+      toastService.error(err instanceof Error ? err.message : 'Failed to add to cart');
+    }
   };
 
   const cardContent = (

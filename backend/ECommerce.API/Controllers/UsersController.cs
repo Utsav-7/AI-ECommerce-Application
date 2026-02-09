@@ -1,3 +1,4 @@
+using IOrderService = ECommerce.Application.Services.Interfaces.IOrderService;
 using ECommerce.Application.Services.Interfaces;
 using ECommerce.Core.DTOs.Request.User;
 using ECommerce.Core.DTOs.Response.Common;
@@ -20,14 +21,16 @@ public class UsersController : ControllerBase
     private readonly IProductService _productService;
     private readonly ICategoryService _categoryService;
     private readonly ICouponService _couponService;
+    private readonly IOrderService _orderService;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService, IProductService productService, ICategoryService categoryService, ICouponService couponService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, IProductService productService, ICategoryService categoryService, ICouponService couponService, IOrderService orderService, ILogger<UsersController> logger)
     {
         _userService = userService;
         _productService = productService;
         _categoryService = categoryService;
         _couponService = couponService;
+        _orderService = orderService;
         _logger = logger;
     }
 
@@ -223,6 +226,7 @@ public class UsersController : ControllerBase
             var totalProducts = await _productService.GetTotalProductCountAsync();
             var totalCategories = await _categoryService.GetTotalCountAsync();
             var totalCoupons = await _couponService.GetTotalCountAsync();
+            var totalOrders = await _orderService.GetTotalOrdersCountAsync();
 
             var stats = new
             {
@@ -231,7 +235,8 @@ public class UsersController : ControllerBase
                 PendingSellers = pendingSellers,
                 TotalProducts = totalProducts,
                 TotalCategories = totalCategories,
-                TotalCoupons = totalCoupons
+                TotalCoupons = totalCoupons,
+                TotalOrders = totalOrders
             };
 
             return Ok(ApiResponse<object>.SuccessResponse(stats, "Dashboard stats retrieved successfully"));

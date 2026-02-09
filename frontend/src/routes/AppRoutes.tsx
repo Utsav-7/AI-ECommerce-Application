@@ -10,18 +10,26 @@ import AdminCategories from '../pages/admin/Categories/Categories';
 import AdminUsers from '../pages/admin/Users/Users';
 import AdminProducts from '../pages/admin/Products/Products';
 import AdminAccount from '../pages/admin/Account/Account';
+import AdminOrders from '../pages/admin/Orders/Orders';
 import SellerDashboard from '../pages/seller/Dashboard/Dashboard';
 import SellerAccount from '../pages/seller/Account/Account';
 import SellerInventory from '../pages/seller/Inventory/Inventory';
+import SellerOrders from '../pages/seller/Orders/Orders';
 import ForgotPasswordPage from '../pages/ForgotPassword/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPassword/ResetPasswordPage';
 import Account from '../pages/Account/Account';
 import AboutUs from '../pages/AboutUs/AboutUs';
 import ContactUs from '../pages/ContactUs/ContactUs';
+import Cart from '../pages/Cart/Cart';
+import Checkout from '../pages/Checkout/Checkout';
+import OrderHistory from '../pages/Orders/OrderHistory/OrderHistory';
+import OrderTracking from '../pages/Orders/OrderTracking/OrderTracking';
 import GuestRoute from './GuestRoute';
 import AdminRoute from './AdminRoute';
 import SellerRoute from './SellerRoute';
 import CustomerRoute from './CustomerRoute';
+import AdminLayout from '../components/layout/AdminLayout/AdminLayout';
+import SellerLayout from '../components/layout/SellerLayout/SellerLayout';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -71,6 +79,15 @@ const AppRoutes: React.FC = () => {
 
         {/* Public Routes - no auth required */}
         <Route path="/products" element={<Products />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route
+          path="/checkout"
+          element={
+            <CustomerRoute>
+              <Checkout />
+            </CustomerRoute>
+          }
+        />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
 
@@ -91,98 +108,59 @@ const AppRoutes: React.FC = () => {
             </CustomerRoute>
           }
         />
-
-        {/* Admin-only routes */}
         <Route
-          path="/admin/dashboard"
+          path="/account/orders"
           element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
+            <CustomerRoute>
+              <OrderHistory />
+            </CustomerRoute>
           }
         />
         <Route
-          path="/admin/categories"
+          path="/orders/:id"
           element={
-            <AdminRoute>
-              <AdminCategories />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/sellers"
-          element={
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/products"
-          element={
-            <AdminRoute>
-              <AdminProducts />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/coupons"
-          element={
-            <AdminRoute>
-              <AdminCoupons />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/account"
-          element={
-            <AdminRoute>
-              <AdminAccount />
-            </AdminRoute>
+            <CustomerRoute>
+              <OrderTracking />
+            </CustomerRoute>
           }
         />
 
-        {/* Seller-only routes */}
+        {/* Admin-only routes - shared layout with same sidebar */}
         <Route
-          path="/seller/dashboard"
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="sellers" element={<AdminUsers />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="coupons" element={<AdminCoupons />} />
+          <Route path="account" element={<AdminAccount />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
+        </Route>
+
+        {/* Seller-only routes - shared layout with same sidebar */}
+        <Route
+          path="/seller"
           element={
             <SellerRoute>
-              <SellerDashboard />
+              <SellerLayout />
             </SellerRoute>
           }
-        />
-        <Route
-          path="/seller/products"
-          element={
-            <SellerRoute>
-              <AdminProducts />
-            </SellerRoute>
-          }
-        />
-        <Route
-          path="/seller/inventory"
-          element={
-            <SellerRoute>
-              <SellerInventory />
-            </SellerRoute>
-          }
-        />
-        <Route
-          path="/seller/account"
-          element={
-            <SellerRoute>
-              <SellerAccount />
-            </SellerRoute>
-          }
-        />
+        >
+          <Route path="dashboard" element={<SellerDashboard />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="inventory" element={<SellerInventory />} />
+          <Route path="orders" element={<SellerOrders />} />
+          <Route path="account" element={<SellerAccount />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
+        </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

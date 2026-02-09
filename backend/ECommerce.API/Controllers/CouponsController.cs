@@ -22,6 +22,29 @@ public class CouponsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Validate a coupon code for cart/order amount (public - no auth required).
+    /// </summary>
+    [HttpGet("validate")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<ValidateCouponResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<ValidateCouponResponse>>> ValidateCoupon(
+        [FromQuery] string? code,
+        [FromQuery] decimal orderAmount = 0)
+    {
+        try
+        {
+            var result = await _couponService.ValidateCouponAsync(code ?? string.Empty, orderAmount);
+            return Ok(ApiResponse<ValidateCouponResponse>.SuccessResponse(result, result.Valid ? "Coupon applied" : result.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating coupon");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<ValidateCouponResponse>.ErrorResponse("An error occurred while validating the coupon"));
+        }
+    }
+
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<CouponResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

@@ -7,6 +7,10 @@ public interface IUnitOfWork : IDisposable
     IProductRepository Products { get; }
     IInventoryRepository Inventories { get; }
     ICouponRepository Coupons { get; }
+    ICartRepository Carts { get; }
+    IAddressRepository Addresses { get; }
+    IOrderRepository Orders { get; }
+    IPaymentRepository Payments { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

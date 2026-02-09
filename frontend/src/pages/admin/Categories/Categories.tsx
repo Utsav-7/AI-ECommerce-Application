@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { categoryService } from '../../../services/api/categoryService';
 import { toastService } from '../../../services/toast/toastService';
@@ -100,12 +100,6 @@ const AdminCategories: React.FC = () => {
   useEffect(() => {
     fetchCategories(1);
   }, [searchQuery, statusFilter, pageSize]);
-
-  const handleLogout = () => {
-    authService.logout();
-    toastService.success('Logged out successfully');
-    navigate('/');
-  };
 
   const openCreateModal = () => {
     setEditingCategory(null);
@@ -306,60 +300,7 @@ const AdminCategories: React.FC = () => {
   }
 
   return (
-    <div className={styles.dashboardContainer}>
-      {/* Left Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>Admin Panel</h2>
-        </div>
-        <nav className={styles.sidebarNav}>
-          <NavLink to="/admin/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📊</span>
-            Dashboard
-          </NavLink>
-          <NavLink to="/admin/users" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👥</span>
-            Users
-          </NavLink>
-          <NavLink to="/admin/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📦</span>
-            Products
-          </NavLink>
-          <NavLink to="/admin/orders" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🛒</span>
-            Orders
-          </NavLink>
-          <NavLink to="/admin/categories" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📁</span>
-            Categories
-          </NavLink>
-          <NavLink to="/admin/sellers" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🏪</span>
-            Sellers
-          </NavLink>
-          <NavLink to="/admin/coupons" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>🎫</span>
-            Coupons
-          </NavLink>
-          <NavLink to="/admin/reports" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📈</span>
-            Reports
-          </NavLink>
-          <NavLink to="/admin/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👤</span>
-            Account
-          </NavLink>
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            <span className={styles.navIcon}>🚪</span>
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className={styles.mainContent}>
+    <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <h1 className={styles.pageTitle}>Category Management</h1>
           <div className={styles.userInfo}>
@@ -546,7 +487,6 @@ const AdminCategories: React.FC = () => {
             )}
           </div>
         </div>
-      </main>
 
       {/* Create/Edit Modal */}
       {isModalOpen && (

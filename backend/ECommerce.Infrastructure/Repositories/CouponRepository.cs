@@ -61,4 +61,11 @@ public class CouponRepository : Repository<Coupon>, ICouponRepository
             query = query.Where(c => c.Id != excludeId.Value);
         return await query.AnyAsync();
     }
+
+    public async Task<Coupon?> GetByCodeAsync(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return null;
+        return await _dbSet
+            .FirstOrDefaultAsync(c => c.Code.Trim().ToLower() == code.Trim().ToLower() && !c.IsDeleted);
+    }
 }

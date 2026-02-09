@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate, NavLink, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../../services/api/authService';
 import { inventoryService } from '../../../services/api/inventoryService';
 import { toastService } from '../../../services/toast/toastService';
@@ -52,47 +52,10 @@ const SellerInventory: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount after auth check
   }, []);
 
-  const handleLogout = () => {
-    authService.logout();
-    toastService.success('Logged out successfully');
-    navigate('/');
-  };
-
   if (!userInfo) return null;
 
   return (
-    <div className={styles.dashboardContainer}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>Seller Panel</h2>
-        </div>
-        <nav className={styles.sidebarNav}>
-          <NavLink to="/seller/dashboard" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📊</span>
-            Dashboard
-          </NavLink>
-          <NavLink to="/seller/products" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📦</span>
-            Products
-          </NavLink>
-          <NavLink to="/seller/inventory" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>📋</span>
-            Inventory
-          </NavLink>
-          <NavLink to="/seller/account" end className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`.trim()}>
-            <span className={styles.navIcon}>👤</span>
-            Account
-          </NavLink>
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            <span className={styles.navIcon}>🚪</span>
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      <main className={styles.mainContent}>
+    <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <h1 className={styles.pageTitle}>Inventory Management</h1>
           <div className={styles.userInfo}>
@@ -192,7 +155,6 @@ const SellerInventory: React.FC = () => {
             </div>
           )}
         </div>
-      </main>
     </div>
   );
 };

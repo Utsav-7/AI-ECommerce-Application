@@ -264,12 +264,29 @@
   cursor: not-allowed;
 }
 
-.quantityValue {
+.quantityValue,
+.quantityInput {
   min-width: 48px;
+  width: 48px;
   text-align: center;
   font-size: 1rem;
   font-weight: 600;
   color: #1a202c;
+}
+
+.quantityInput {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.quantityInput:focus {
+  outline: none;
+}
+
+.quantityInput:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
 }
 
 .actionButtons {

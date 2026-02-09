@@ -13,4 +13,5 @@ public interface ICouponService
     Task<CouponResponse> CreateAsync(CreateCouponRequest request);
     Task<CouponResponse> UpdateAsync(int id, UpdateCouponRequest request);
     Task DeleteAsync(int id);
+    Task<ValidateCouponResponse> ValidateCouponAsync(string code, decimal orderAmount);
 }

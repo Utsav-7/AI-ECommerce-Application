@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ProductPublic } from '../../../types/product.types';
 import { toastService } from '../../../services/toast/toastService';
+import { cartService } from '../../../services/api/cartService';
 import styles from './ProductQuickViewModal.module.css';
+
+const CART_UPDATED_EVENT = 'cartUpdated';
 
 interface ProductQuickViewModalProps {
   product: ProductPublic | null;
@@ -31,6 +34,7 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   const navigate = useNavigate();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [qtyInput, setQtyInput] = useState('1');
 
   const allImages: string[] = product
     ? [
@@ -48,6 +52,7 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   useEffect(() => {
     setSelectedImageIndex(0);
     setQuantity(1);
+    setQtyInput('1');
   }, [product?.id]);
 
   useEffect(() => {
@@ -69,11 +74,21 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!product?.inStock) return;
-    toastService.success(`${product.name} x${quantity} added to cart`);
-    // Cart integration can be added here
+    const displayPrice = product.discountPrice ?? product.price;
+    try {
+      await cartService.addItem(product.id, quantity, {
+        productName: product.name,
+        imageUrl: product.imageUrl,
+        unitPrice: displayPrice,
+      });
+      toastService.success(`${product.name} x${quantity} added to cart`);
+      window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT));
+    } catch (err) {
+      toastService.error(err instanceof Error ? err.message : 'Failed to add to cart');
+    }
   };
 
   const handleBuyNow = (e: React.MouseEvent) => {
@@ -87,6 +102,13 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
 
   const minQty = 1;
   const maxQty = 99;
+
+  const applyQuantityFromInput = () => {
+    const parsed = parseInt(qtyInput.replace(/\D/g, ''), 10);
+    const valid = isNaN(parsed) || parsed < minQty ? minQty : Math.min(parsed, maxQty);
+    setQuantity(valid);
+    setQtyInput(String(valid));
+  };
 
   if (!isOpen || !product) return null;
 
@@ -186,17 +208,39 @@ const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
                 <button
                   type="button"
                   className={styles.quantityBtn}
-                  onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
+                  onClick={() => {
+                    const q = Math.max(minQty, quantity - 1);
+                    setQuantity(q);
+                    setQtyInput(String(q));
+                  }}
                   disabled={quantity <= minQty || !product.inStock}
                   aria-label="Decrease quantity"
                 >
                   −
                 </button>
-                <span className={styles.quantityValue}>{quantity}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.quantityInput}
+                  value={qtyInput}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    setQtyInput(v || '');
+                  }}
+                  onBlur={applyQuantityFromInput}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                  onFocus={(e) => e.target.select()}
+                  disabled={!product.inStock}
+                  aria-label="Quantity"
+                />
                 <button
                   type="button"
                   className={styles.quantityBtn}
-                  onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                  onClick={() => {
+                    const q = Math.min(maxQty, quantity + 1);
+                    setQuantity(q);
+                    setQtyInput(String(q));
+                  }}
                   disabled={quantity >= maxQty || !product.inStock}
                   aria-label="Increase quantity"
                 >

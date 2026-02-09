@@ -61,9 +61,37 @@ export const API_ENDPOINTS = {
     GET_ALL: '/api/Coupons',
     GET_PAGED: '/api/Coupons/paged',
     GET_BY_ID: (id: number) => `/api/Coupons/${id}`,
+    VALIDATE: '/api/Coupons/validate',
     CREATE: '/api/Coupons',
     UPDATE: (id: number) => `/api/Coupons/${id}`,
     DELETE: (id: number) => `/api/Coupons/${id}`,
+  },  
+  CART: {
+    GET: '/api/Cart',
+    ADD_ITEM: '/api/Cart/items',
+    UPDATE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
+    REMOVE_ITEM: (cartItemId: number) => `/api/Cart/items/${cartItemId}`,
+    CLEAR: '/api/Cart',
+  },
+  ORDERS: {
+    PLACE: '/api/Orders',
+    GET_MY_ORDERS: '/api/Orders/my-orders',
+    GET_BY_ID: (id: number) => `/api/Orders/${id}`,
+    GET_ADMIN: '/api/Orders/admin',
+    GET_SELLER: '/api/Orders/seller',
+    UPDATE_STATUS: (id: number) => `/api/Orders/${id}/status`,
+  },
+  REPORTS: {
+    ADMIN: '/api/Reports/admin',
+    SELLER: '/api/Reports/seller',
+  },
+  ADDRESSES: {
+    GET_ALL: '/api/Addresses',
+    GET_BY_ID: (id: number) => `/api/Addresses/${id}`,
+    CREATE: '/api/Addresses',
+    UPDATE: (id: number) => `/api/Addresses/${id}`,
+    DELETE: (id: number) => `/api/Addresses/${id}`,
+    SET_DEFAULT: (id: number) => `/api/Addresses/${id}/set-default`,
   },
 } as const;
 
@@ -71,5 +99,6 @@ export const STORAGE_KEYS = {
   TOKEN: 'auth_token',
   REFRESH_TOKEN: 'refresh_token',
   USER: 'user_info',
+  GUEST_CART: 'guest_cart',
 } as const;
 

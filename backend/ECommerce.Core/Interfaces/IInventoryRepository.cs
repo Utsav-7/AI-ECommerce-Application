@@ -6,4 +6,5 @@ public interface IInventoryRepository : IRepository<Inventory>
 {
     Task<IEnumerable<Inventory>> GetBySellerIdAsync(int sellerId);
     Task<int> GetLowStockCountBySellerAsync(int sellerId);
+    Task<Inventory?> GetByProductIdAsync(int productId);
 }

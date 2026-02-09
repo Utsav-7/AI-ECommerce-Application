@@ -60,3 +60,17 @@ export const getAccountPathByUserInfo = (userInfo: UserInfo | null): string => {
   }
 };
 
+export const getOrdersPathByUserInfo = (userInfo: UserInfo | null): string => {
+  if (!userInfo) return '/account/orders';
+  const role = normalizeRole(userInfo.role);
+  switch (role) {
+    case UserRoleValues.Admin:
+      return '/admin/orders';
+    case UserRoleValues.Seller:
+      return '/seller/orders';
+    case UserRoleValues.User:
+    default:
+      return '/account/orders';
+  }
+};
+
