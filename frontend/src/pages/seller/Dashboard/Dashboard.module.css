@@ -234,7 +234,7 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -247,6 +247,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  height: 120px;
+  min-height: 120px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -272,7 +274,7 @@
 
 .statNumber {
   margin: 0 0 0.5rem 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #667eea;
 }
@@ -296,6 +298,14 @@
 .statCardLink {
   text-decoration: none;
   color: inherit;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
 }
 
 .statLink {
@@ -342,6 +352,14 @@
 .actionCardLink {
   text-decoration: none;
   color: inherit;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
 }
 
 .primaryButtonMuted {
@@ -358,7 +376,7 @@
 
 .actionsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
 }
 
@@ -367,6 +385,9 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -409,6 +430,7 @@
   list-style: none;
   padding: 0;
   margin: 0 0 1rem 0;
+  flex: 1;
 }
 
 .featureList li {
@@ -431,6 +453,7 @@
 
 .primaryButton {
   width: 100%;
+  margin-top: auto;
   padding: 0.75rem;
   background: #667eea;
   color: white;
@@ -445,6 +468,13 @@
 .primaryButton:hover {
   background: #5568d3;
   transform: translateY(-2px);
+}
+
+@media (max-width: 1200px) {
+  .statsGrid,
+  .actionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 968px) {

@@ -21,6 +21,7 @@ type TabType = 'all' | 'users' | 'sellers' | 'pending';
 interface EditFormData {
   firstName: string;
   lastName: string;
+  email: string;
   phoneNumber: string;
   isActive: boolean;
 }
@@ -64,6 +65,7 @@ const AdminUsers: React.FC = () => {
   const [editFormData, setEditFormData] = useState<EditFormData>({
     firstName: '',
     lastName: '',
+    email: '',
     phoneNumber: '',
     isActive: true,
   });
@@ -142,6 +144,7 @@ const AdminUsers: React.FC = () => {
     setEditFormData({
       firstName: user.firstName,
       lastName: user.lastName,
+      email: user.email || '',
       phoneNumber: user.phoneNumber || '',
       isActive: user.isActive,
     });
@@ -154,6 +157,7 @@ const AdminUsers: React.FC = () => {
     setEditFormData({
       firstName: '',
       lastName: '',
+      email: '',
       phoneNumber: '',
       isActive: true,
     });
@@ -168,6 +172,7 @@ const AdminUsers: React.FC = () => {
       const updateData: UpdateUserRequest = {
         firstName: editFormData.firstName,
         lastName: editFormData.lastName,
+        email: editFormData.email.trim() || undefined,
         phoneNumber: editFormData.phoneNumber || undefined,
         isActive: editFormData.isActive,
       };
@@ -652,6 +657,16 @@ const AdminUsers: React.FC = () => {
                   value={editFormData.lastName}
                   onChange={(e) => setEditFormData(prev => ({ ...prev, lastName: e.target.value }))}
                   required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="editEmail">Email</label>
+                <input
+                  type="email"
+                  id="editEmail"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="user@example.com"
                 />
               </div>
               <div className={styles.formGroup}>

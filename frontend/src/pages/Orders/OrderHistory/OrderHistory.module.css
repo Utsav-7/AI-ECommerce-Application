@@ -2,194 +2,501 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .container {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 2rem 1.5rem 3rem;
+  flex: 1;
 }
 
+/* Page header */
 .pageHeader {
   margin-bottom: 2rem;
 }
 
-.pageHeader h1 {
-  font-size: 1.75rem;
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.breadcrumbLink {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumbLink:hover {
+  color: #f59e0b;
+}
+
+.breadcrumbSep {
+  color: #cbd5e1;
+  user-select: none;
+}
+
+.breadcrumbCurrent {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.pageTitle {
+  font-size: 1.875rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
 }
 
-.pageHeader p {
+.pageSubtitle {
   color: #64748b;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Toolbar & tabs */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.tab:hover {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.tabActive {
+  color: #0f172a;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-color: transparent;
+  color: white;
+}
+
+.tabActive:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.resultCount {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Empty filter state */
+.emptyFilterState {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.emptyFilterState p {
   margin: 0 0 1rem 0;
+  color: #64748b;
 }
 
-.backLink {
-  color: #059669;
+.clearFilterBtn {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  text-decoration: none;
+  color: #f59e0b;
+  background: transparent;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
-.backLink:hover {
-  text-decoration: underline;
+.clearFilterBtn:hover {
+  background: #f59e0b;
+  color: white;
 }
 
-.loadingState {
+/* Orders list */
+.ordersList {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
+  gap: 1.25rem;
+}
+
+/* Order card */
+.orderCard {
+  position: relative;
+  display: flex;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #059669;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.orderCard:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.orderCardAccent {
+  width: 4px;
+  flex-shrink: 0;
 }
 
-.loadingState p {
-  margin: 1rem 0 0 0;
+.orderCardBody {
+  flex: 1;
+  padding: 1.5rem 1.5rem 1.25rem;
+  min-width: 0;
+}
+
+.orderCardTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.orderIdBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.orderLabel {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.orderNumber {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.statusIcon {
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.orderCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.metaLabel {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metaValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.orderTotal {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.orderCardItems {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.itemThumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.moreItems {
+  font-size: 0.8rem;
+  font-weight: 600;
   color: #64748b;
+  margin-left: 0.25rem;
 }
 
+.orderCardFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.viewOrderBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.viewOrderBtn:hover {
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Empty state */
 .emptyState {
   text-align: center;
   padding: 4rem 2rem;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .emptyIcon {
-  width: 80px;
-  height: 80px;
+  width: 88px;
+  height: 88px;
   margin: 0 auto 1.5rem;
-  color: #cbd5e1;
+  color: #e2e8f0;
+}
+
+.emptyIcon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .emptyState h2 {
   margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: #334155;
 }
 
 .emptyState p {
-  margin: 0 0 1rem 0;
-  color: #94a3b8;
+  margin: 0 0 1.5rem 0;
+  color: #64748b;
+  font-size: 0.95rem;
 }
 
 .shopLink {
   display: inline-block;
-  padding: 0.5rem 1.25rem;
-  background: #059669;
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
   font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .shopLink:hover {
-  background: #047857;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
 }
 
-.ordersList {
+/* Skeleton loading */
+.orderCardSkeleton {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.orderCard {
-  display: block;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
-  text-decoration: none;
-  color: inherit;
-  transition: box-shadow 0.2s;
-}
-
-.orderCard:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-.orderHeader {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem 2rem;
-  margin-bottom: 1rem;
-}
-
-.orderMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.orderLabel {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.orderDate,
-.orderTotal {
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.statusBadge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: 6px;
-}
-
-.orderItems {
+.skeletonRow {
   display: flex;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.skeletonBadge {
+  width: 80px;
+  height: 24px;
+  border-radius: 20px;
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 25%,
+    #f1f5f9 50%,
+    #e2e8f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+}
+
+.skeletonText {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 25%,
+    #f1f5f9 50%,
+    #e2e8f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+}
+
+.skeletonThumbs {
+  display: flex;
   gap: 0.5rem;
-  padding: 1rem 0;
-  border-top: 1px solid #f1f5f9;
 }
 
-.itemThumb {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 6px;
-  background: #f1f5f9;
+.skeletonThumbs::before,
+.skeletonThumbs::after {
+  content: '';
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 25%,
+    #f1f5f9 50%,
+    #e2e8f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
 }
 
-.moreItems {
-  font-size: 0.875rem;
-  color: #64748b;
-  margin-left: 0.25rem;
+.skeletonThumbs::after {
+  animation-delay: 0.15s;
 }
 
-.orderFooter {
-  padding-top: 1rem;
-  border-top: 1px solid #f1f5f9;
+.skeletonMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
 }
 
-.trackLink {
-  color: #059669;
-  font-weight: 600;
-  font-size: 0.875rem;
+.skeletonBtn {
+  width: 100px;
+  height: 36px;
+  border-radius: 8px;
+  margin-left: auto;
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 25%,
+    #f1f5f9 50%,
+    #e2e8f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .container {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    flex-shrink: 0;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resultCount {
+    text-align: center;
+  }
+
+  .orderCardBody {
+    padding: 1.25rem 1rem;
+  }
+
+  .orderCardTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .orderCardMeta {
+    gap: 1rem;
+  }
+
+  .viewOrderBtn {
+    width: 100%;
+    justify-content: center;
+  }
 }

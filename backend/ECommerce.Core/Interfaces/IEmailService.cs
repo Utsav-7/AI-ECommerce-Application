@@ -9,5 +9,9 @@ public interface IEmailService
     Task SendSellerApprovalEmailAsync(string to, string userName);
     Task SendSellerRejectionEmailAsync(string to, string userName, string? reason);
     Task SendAccountStatusChangeEmailAsync(string to, string userName, bool isActive);
+    Task SendOrderPlacedEmailAsync(string to, string customerName, string orderNumber, decimal totalAmount, DateTime createdAt);
+    Task SendOrderConfirmedEmailAsync(string to, string customerName, string orderNumber);
+    Task SendOrderCancelledEmailAsync(string to, string customerName, string orderNumber);
+    Task SendOrderDeliveredEmailAsync(string to, string customerName, string orderNumber, DateTime? deliveredDate = null);
 }
 

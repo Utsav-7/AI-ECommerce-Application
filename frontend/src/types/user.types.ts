@@ -38,6 +38,7 @@ export interface PendingSeller {
 export interface UpdateUserRequest {
   firstName: string;
   lastName: string;
+  email?: string;
   phoneNumber?: string;
   isActive: boolean;
 }

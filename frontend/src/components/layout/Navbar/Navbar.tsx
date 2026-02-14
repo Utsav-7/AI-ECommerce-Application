@@ -4,6 +4,7 @@ import { authService } from '../../../services/api/authService';
 import { cartService } from '../../../services/api/cartService';
 import { toastService } from '../../../services/toast/toastService';
 import { getDashboardPathByUserInfo, getAccountPathByUserInfo, getOrdersPathByUserInfo } from '../../../utils/routeHelpers';
+import { UserRoleValues } from '../../../types/auth.types';
 import styles from './Navbar.module.css';
 
 const CART_UPDATED_EVENT = 'cartUpdated';
@@ -15,6 +16,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const isAuthenticated = authService.isAuthenticated();
   const userInfo = isAuthenticated ? authService.getUserInfo() : null;
+  const isCustomer = isAuthenticated && userInfo?.role === UserRoleValues.User;
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const loadCartCount = async () => {
@@ -65,13 +67,22 @@ const Navbar: React.FC = () => {
     return 'User';
   };
 
-  const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/products', label: 'Products' },
-    { to: '/about', label: 'About' },
-    { to: '/contact', label: 'Contact' },
-    { to: '/cart', label: 'Cart', badge: cartCount },
-  ];
+  const navLinks = isCustomer
+    ? [
+        { to: '/products', label: 'Products' },
+        { to: '/cart', label: 'Cart', badge: cartCount },
+        { to: getOrdersPathByUserInfo(userInfo), label: 'Orders' },
+        { to: getAccountPathByUserInfo(userInfo), label: 'Account' },
+        { to: '/contact', label: 'Contact' },
+        { to: '/about', label: 'About' },
+      ]
+    : [
+        { to: '/', label: 'Home' },
+        { to: '/products', label: 'Products' },
+        { to: '/about', label: 'About' },
+        { to: '/contact', label: 'Contact' },
+        { to: '/cart', label: 'Cart', badge: cartCount },
+      ];
 
   return (
     <nav className={styles.navbar}>
@@ -107,27 +118,31 @@ const Navbar: React.FC = () => {
 
           {isAuthenticated && userInfo && (
             <>
-              <Link
-                to={getDashboardPathByUserInfo(userInfo)}
-                className={styles.menuItem}
-                onClick={closeMenus}
-              >
-                Dashboard
-              </Link>
-              <Link
-                to={getAccountPathByUserInfo(userInfo)}
-                className={styles.menuItem}
-                onClick={closeMenus}
-              >
-                Account
-              </Link>
-              <Link
-                to={getOrdersPathByUserInfo(userInfo)}
-                className={styles.menuItem}
-                onClick={closeMenus}
-              >
-                Orders
-              </Link>
+              {!isCustomer && (
+                <>
+                  <Link
+                    to={getDashboardPathByUserInfo(userInfo)}
+                    className={styles.menuItem}
+                    onClick={closeMenus}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to={getAccountPathByUserInfo(userInfo)}
+                    className={styles.menuItem}
+                    onClick={closeMenus}
+                  >
+                    Account
+                  </Link>
+                  <Link
+                    to={getOrdersPathByUserInfo(userInfo)}
+                    className={styles.menuItem}
+                    onClick={closeMenus}
+                  >
+                    Orders
+                  </Link>
+                </>
+              )}
 
               <div className={styles.userMenuContainer} ref={userMenuRef}>
                 <button

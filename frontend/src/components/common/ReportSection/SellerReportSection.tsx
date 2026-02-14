@@ -23,6 +23,9 @@ function getDateRange(preset: DateRangePreset): { from: Date; to: Date } {
   const from = new Date(to);
   if (preset === '7d') from.setDate(from.getDate() - 7);
   else if (preset === '30d') from.setDate(from.getDate() - 30);
+  else if (preset === '90d') from.setDate(from.getDate() - 90);
+  else if (preset === '6m') from.setMonth(from.getMonth() - 6);
+  else if (preset === '1y') from.setFullYear(from.getFullYear() - 1);
   else from.setDate(from.getDate() - 90);
   from.setHours(0, 0, 0, 0);
   return { from, to };
@@ -74,45 +77,82 @@ const SellerReportSection: React.FC<SellerReportSectionProps> = ({ className }) 
     revenue: p.revenue,
   })) ?? [];
 
+  const downloadReportCsv = () => {
+    if (!data) return;
+    const rows: string[][] = [
+      ['Seller Sales Report', ''],
+      ['Period', preset === '7d' ? 'Last 7 days' : preset === '30d' ? 'Last 30 days' : preset === '90d' ? 'Last 90 days' : preset === '6m' ? 'Last 6 months' : 'Last 1 year'],
+      ['Total Revenue', `₹${data.totalRevenue.toLocaleString('en-IN')}`],
+      ['Total Orders', String(data.totalOrders)],
+      [],
+      ['Date', 'Orders', 'Revenue (₹)'],
+      ...(data.dailyStats?.map((d) => [d.date, String(d.orderCount), String(d.revenue)]) ?? []),
+      [],
+      ['Top Products', 'Units Sold', 'Revenue (₹)'],
+      ...(data.topProducts?.map((p) => [p.productName, String(p.unitsSold), String(p.revenue)]) ?? []),
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `seller-report-${preset}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section className={`${styles.reportSection} ${className ?? ''}`}>
-      <div className={styles.sectionHeader}>
-        <h3 className={styles.sectionTitle}>📈 Sales Report</h3>
-        <div className={styles.controls}>
-          <select
-            className={styles.dateRangeSelect}
-            value={preset}
-            onChange={(e) => setPreset(e.target.value as DateRangePreset)}
-          >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-          </select>
-          <button
-            className={styles.dateRangeSelect}
-            onClick={fetchReport}
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
-        </div>
-      </div>
+      <h3 className={styles.sectionTitle}>📈 Sales Report</h3>
 
       {error && <div className={styles.errorBox}>{error}</div>}
 
-      {!error && data && (
+      {!error && (
         <>
-          <div className={styles.statsRow}>
-            <div className={styles.statBox}>
-              <p className={styles.statBoxLabel}>Total Revenue</p>
-              <p className={styles.statBoxValue}>₹{data.totalRevenue.toLocaleString('en-IN')}</p>
+          <div className={styles.reportStatsGrid}>
+            <div className={styles.reportStatCard}>
+              <div className={styles.reportStatIcon}>📅</div>
+              <div className={styles.reportStatContent}>
+                <h4 className={styles.reportStatLabel}>Period</h4>
+                <div className={styles.reportStatControls}>
+                  <select
+                    className={styles.dateRangeSelect}
+                    value={preset}
+                    onChange={(e) => setPreset(e.target.value as DateRangePreset)}
+                  >
+                    <option value="7d">Last 7 days</option>
+                    <option value="30d">Last 30 days</option>
+                    <option value="90d">Last 90 days</option>
+                    <option value="6m">Last 6 months</option>
+                    <option value="1y">Last 1 year</option>
+                  </select>
+                  <button
+                    className={styles.refreshButton}
+                    onClick={fetchReport}
+                    disabled={loading}
+                  >
+                    {loading ? '...' : 'Refresh'}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className={styles.statBox}>
-              <p className={styles.statBoxLabel}>Total Orders</p>
-              <p className={styles.statBoxValue}>{data.totalOrders}</p>
+            <div className={styles.reportStatCard}>
+              <div className={styles.reportStatIcon}>📥</div>
+              <div className={styles.reportStatContent}>
+                <h4 className={styles.reportStatLabel}>Download</h4>
+                <button
+                  className={styles.downloadButtonSmall}
+                  onClick={downloadReportCsv}
+                  disabled={!data || loading}
+                  title="Download report as CSV"
+                >
+                  Download Report
+                </button>
+              </div>
             </div>
           </div>
 
+          {data && (
           <div className={styles.chartsRow}>
             <div className={styles.chartCard}>
               <h4 className={styles.chartTitle}>Orders & Revenue Over Time</h4>
@@ -175,6 +215,7 @@ const SellerReportSection: React.FC<SellerReportSectionProps> = ({ className }) 
               </div>
             </div>
           </div>
+          )}
         </>
       )}
     </section>
