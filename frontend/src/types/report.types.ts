@@ -30,4 +30,4 @@ export interface SellerReportResponse {
   topProducts: ProductSalesDto[];
 }
 
-export type DateRangePreset = '7d' | '30d' | '90d';
+export type DateRangePreset = '7d' | '30d' | '90d' | '6m' | '1y';

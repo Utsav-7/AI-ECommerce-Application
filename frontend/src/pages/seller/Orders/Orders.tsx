@@ -126,9 +126,11 @@ const SellerOrders: React.FC = () => {
                           <div className={styles.email}>{order.customerEmail}</div>
                         </td>
                         <td className={styles.itemsCol}>
-                          {order.items?.length ? order.items.map((i) => (
-                            <div key={i.id}>{i.productName} × {i.quantity}</div>
-                          )) : '—'}
+                          {order.items?.length
+                            ? order.items.length === 1
+                              ? `${order.items[0].productName} × ${order.items[0].quantity}`
+                              : `${order.items[0].productName} × ${order.items[0].quantity} ....`
+                            : '—'}
                         </td>
                         <td>{formatDate(order.createdAt)}</td>
                         <td>₹{order.totalAmount.toLocaleString('en-IN')}</td>

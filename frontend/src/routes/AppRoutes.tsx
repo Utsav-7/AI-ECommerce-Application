@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ScrollToTop from '../components/common/ScrollToTop/ScrollToTop';
 import Home from '../pages/Home/Home';
 import Products from '../pages/Products/Products';
 import LoginPage from '../pages/Login/LoginPage';
@@ -34,6 +35,7 @@ import SellerLayout from '../components/layout/SellerLayout/SellerLayout';
 const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Guest-only: Home, Login, Register - redirect to dashboard if logged in */}
         <Route

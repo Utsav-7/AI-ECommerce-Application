@@ -139,6 +139,17 @@ public class UserService : IUserService
         user.LastName = request.LastName.Trim();
         user.PhoneNumber = request.PhoneNumber?.Trim();
         user.IsActive = request.IsActive;
+
+        // Admin can update email for Customer (User) and Seller
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var newEmail = request.Email.Trim().ToLowerInvariant();
+            var existingByEmail = await _unitOfWork.Users.GetByEmailAsync(newEmail);
+            if (existingByEmail != null && existingByEmail.Id != id)
+                throw new BadRequestException("Email is already in use by another account.");
+            user.Email = newEmail;
+        }
+
         user.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Users.UpdateAsync(user);

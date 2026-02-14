@@ -13,11 +13,13 @@ namespace ECommerce.Application.Services.Implementations;
 public class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailService _emailService;
     private readonly ILogger<OrderService> _logger;
 
-    public OrderService(IUnitOfWork unitOfWork, ILogger<OrderService> logger)
+    public OrderService(IUnitOfWork unitOfWork, IEmailService emailService, ILogger<OrderService> logger)
     {
         _unitOfWork = unitOfWork;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -140,7 +142,25 @@ public class OrderService : IOrderService
             _logger.LogInformation("Order {OrderNumber} placed by user {UserId}", orderNumber, userId);
 
             var created = await _unitOfWork.Orders.GetByIdWithDetailsAsync(order.Id);
-            return MapToResponse(created!);
+            var response = MapToResponse(created!);
+
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(response.CustomerEmail))
+                    await _emailService.SendOrderPlacedEmailAsync(
+                        response.CustomerEmail,
+                        response.CustomerName,
+                        response.OrderNumber,
+                        response.TotalAmount,
+                        response.CreatedAt);
+                _logger.LogInformation("Order placed email sent to {Email} for order {OrderNumber}", response.CustomerEmail, response.OrderNumber);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send order placed email to {Email} for order {OrderNumber}", response.CustomerEmail, response.OrderNumber);
+            }
+
+            return response;
         }
         catch
         {
@@ -237,7 +257,35 @@ public class OrderService : IOrderService
         await _unitOfWork.SaveChangesAsync();
 
         var updated = await _unitOfWork.Orders.GetByIdWithDetailsAsync(orderId);
-        return MapToResponse(updated!);
+        var response = MapToResponse(updated!);
+
+        if (!string.IsNullOrWhiteSpace(response.CustomerEmail))
+        {
+            try
+            {
+                switch (request.Status)
+                {
+                    case OrderStatus.Confirmed:
+                        await _emailService.SendOrderConfirmedEmailAsync(response.CustomerEmail, response.CustomerName, response.OrderNumber);
+                        _logger.LogInformation("Order confirmed email sent to {Email} for order {OrderNumber}", response.CustomerEmail, response.OrderNumber);
+                        break;
+                    case OrderStatus.Cancelled:
+                        await _emailService.SendOrderCancelledEmailAsync(response.CustomerEmail, response.CustomerName, response.OrderNumber);
+                        _logger.LogInformation("Order cancelled email sent to {Email} for order {OrderNumber}", response.CustomerEmail, response.OrderNumber);
+                        break;
+                    case OrderStatus.Delivered:
+                        await _emailService.SendOrderDeliveredEmailAsync(response.CustomerEmail, response.CustomerName, response.OrderNumber, order.DeliveredDate);
+                        _logger.LogInformation("Order delivered email sent to {Email} for order {OrderNumber}", response.CustomerEmail, response.OrderNumber);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send order status email to {Email} for order {OrderNumber}", response.CustomerEmail, response.OrderNumber);
+            }
+        }
+
+        return response;
     }
 
     private async Task<string> GenerateOrderNumberAsync()

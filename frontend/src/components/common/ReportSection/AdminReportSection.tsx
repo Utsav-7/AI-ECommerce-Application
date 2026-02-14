@@ -12,6 +12,7 @@ import {
   Cell,
 } from 'recharts';
 import { reportService } from '../../../services/api/reportService';
+import { downloadAdminReportPdf } from '../../../utils/adminReportPdf';
 import type { AdminReportResponse, DateRangePreset } from '../../../types/report.types';
 import styles from './ReportSection.module.css';
 
@@ -23,9 +24,23 @@ function getDateRange(preset: DateRangePreset): { from: Date; to: Date } {
   const from = new Date(to);
   if (preset === '7d') from.setDate(from.getDate() - 7);
   else if (preset === '30d') from.setDate(from.getDate() - 30);
+  else if (preset === '90d') from.setDate(from.getDate() - 90);
+  else if (preset === '6m') from.setMonth(from.getMonth() - 6);
+  else if (preset === '1y') from.setFullYear(from.getFullYear() - 1);
   else from.setDate(from.getDate() - 90);
   from.setHours(0, 0, 0, 0);
   return { from, to };
+}
+
+function getPeriodLabel(preset: DateRangePreset): string {
+  switch (preset) {
+    case '7d': return 'Last 7 days';
+    case '30d': return 'Last 30 days';
+    case '90d': return 'Last 90 days';
+    case '6m': return 'Last 6 months';
+    case '1y': return 'Last 1 year';
+    default: return 'Report';
+  }
 }
 
 function formatChartDate(s: string): string {
@@ -73,6 +88,35 @@ const AdminReportSection: React.FC<AdminReportSectionProps> = ({ className }) =>
     count: d.count,
   })) ?? [];
 
+  const downloadPdf = () => {
+    if (!data) return;
+    downloadAdminReportPdf(data, preset);
+  };
+
+  const downloadExcel = () => {
+    if (!data) return;
+    const rows: string[][] = [
+      ['Admin Sales Report', ''],
+      ['Period', getPeriodLabel(preset)],
+      ['Total Revenue', `₹${data.totalRevenue.toLocaleString('en-IN')}`],
+      ['Total Orders', String(data.totalOrders)],
+      [],
+      ['Date', 'Orders', 'Revenue (₹)'],
+      ...(data.dailyStats?.map((d) => [d.date, String(d.orderCount), String(d.revenue)]) ?? []),
+      [],
+      ['Orders by Status', 'Count'],
+      ...(data.ordersByStatus?.map((s) => [s.status, String(s.count)]) ?? []),
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `admin-report-${preset}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section className={`${styles.reportSection} ${className ?? ''}`}>
       <div className={styles.sectionHeader}>
@@ -86,6 +130,8 @@ const AdminReportSection: React.FC<AdminReportSectionProps> = ({ className }) =>
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
+            <option value="6m">Last 6 months</option>
+            <option value="1y">Last 1 year</option>
           </select>
           <button
             className={styles.dateRangeSelect}
@@ -93,6 +139,22 @@ const AdminReportSection: React.FC<AdminReportSectionProps> = ({ className }) =>
             disabled={loading}
           >
             {loading ? 'Loading...' : 'Refresh'}
+          </button>
+          <button
+            className={styles.downloadButton}
+            onClick={downloadPdf}
+            disabled={!data || loading}
+            title="Download report as PDF"
+          >
+            📄 Download PDF
+          </button>
+          <button
+            className={styles.downloadButton}
+            onClick={downloadExcel}
+            disabled={!data || loading}
+            title="Download report as Excel (CSV)"
+          >
+            📊 Download Excel
           </button>
         </div>
       </div>

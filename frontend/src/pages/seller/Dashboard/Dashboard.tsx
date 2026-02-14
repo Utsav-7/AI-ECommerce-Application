@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { authService } from '../../../services/api/authService';
 import { productService } from '../../../services/api/productService';
 import { inventoryService } from '../../../services/api/inventoryService';
-import { toastService } from '../../../services/toast/toastService';
+import { reportService } from '../../../services/api/reportService';
 import { UserRoleValues } from '../../../types/auth.types';
 import type { SellerInventoryStats } from '../../../types/inventory.types';
 import { SellerReportSection } from '../../../components/common/ReportSection';
@@ -21,8 +21,11 @@ const SellerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const userInfo = authService.getUserInfo();
 
+  const reportSectionRef = useRef<HTMLDivElement>(null);
   const [productCount, setProductCount] = useState(0);
   const [inventoryStats, setInventoryStats] = useState<SellerInventoryStats | null>(null);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,18 +41,29 @@ const SellerDashboard: React.FC = () => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const [productsResult, invStats] = await Promise.all([
+        const to = new Date();
+        const from = new Date(to);
+        from.setDate(from.getDate() - 90);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+
+        const [productsResult, invStats, reportResult] = await Promise.all([
           productService.getMyProductsPaged({ page: 1, pageSize: 1, signal }),
           inventoryService.getSellerStats(signal),
+          reportService.getSellerReport(from, to),
         ]);
         if (!cancelled) {
           setProductCount(productsResult.totalRecords);
           setInventoryStats(invStats);
+          setTotalOrders(reportResult.totalOrders);
+          setTotalRevenue(reportResult.totalRevenue);
         }
       } catch (err) {
         if (!axios.isCancel(err) && !cancelled) {
           setProductCount(0);
           setInventoryStats(null);
+          setTotalOrders(0);
+          setTotalRevenue(0);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -96,21 +110,25 @@ const SellerDashboard: React.FC = () => {
               </div>
             </Link>
 
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>🛒</div>
-              <div className={styles.statContent}>
-                <h3>Total Orders</h3>
-                <p className={styles.statNumber}>0</p>
-                <span className={styles.statLinkMuted}>Coming soon</span>
+            <Link to="/seller/orders" className={styles.statCardLink}>
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>🛒</div>
+                <div className={styles.statContent}>
+                  <h3>Total Orders</h3>
+                  <p className={styles.statNumber}>{loading ? '...' : totalOrders}</p>
+                  <span className={styles.statLink}>View Orders →</span>
+                </div>
               </div>
-            </div>
+            </Link>
 
             <div className={styles.statCard}>
               <div className={styles.statIcon}>💰</div>
               <div className={styles.statContent}>
                 <h3>Total Revenue</h3>
-                <p className={styles.statNumber}>₹0</p>
-                <span className={styles.statLinkMuted}>Coming soon</span>
+                <p className={styles.statNumber}>
+                  {loading ? '...' : `₹${totalRevenue.toLocaleString('en-IN')}`}
+                </p>
+                <span className={styles.statLinkMuted}>Last 90 days</span>
               </div>
             </div>
 
@@ -128,7 +146,9 @@ const SellerDashboard: React.FC = () => {
             </Link>
           </div>
 
-          <SellerReportSection />
+          <div ref={reportSectionRef}>
+            <SellerReportSection />
+          </div>
 
           {inventoryStats && inventoryStats.lowStockCount > 0 && (
             <div className={styles.alertBanner}>
@@ -174,35 +194,43 @@ const SellerDashboard: React.FC = () => {
               </div>
             </Link>
 
-            <div className={styles.actionCard}>
-              <div className={styles.cardHeader}>
-                <h3>Order Management</h3>
-                <span className={styles.badge}>Seller</span>
+            <Link to="/seller/orders" className={styles.actionCardLink}>
+              <div className={styles.actionCard}>
+                <div className={styles.cardHeader}>
+                  <h3>Order Management</h3>
+                  <span className={styles.badge}>Seller</span>
+                </div>
+                <p>Process and track your orders</p>
+                <ul className={styles.featureList}>
+                  <li>View pending orders</li>
+                  <li>Update order status</li>
+                  <li>Process shipments</li>
+                  <li>Handle returns</li>
+                </ul>
+                <span className={styles.primaryButton}>View Orders →</span>
               </div>
-              <p>Process and track your orders</p>
-              <ul className={styles.featureList}>
-                <li>View pending orders</li>
-                <li>Update order status</li>
-                <li>Process shipments</li>
-                <li>Handle returns</li>
-              </ul>
-              <span className={styles.primaryButtonMuted}>View Orders (Coming soon)</span>
-            </div>
+            </Link>
 
-            <div className={styles.actionCard}>
-              <div className={styles.cardHeader}>
-                <h3>Sales Reports</h3>
-                <span className={styles.badge}>Seller</span>
+            <button
+              type="button"
+              className={styles.actionCardLink}
+              onClick={() => reportSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <div className={styles.actionCard}>
+                <div className={styles.cardHeader}>
+                  <h3>Sales Reports</h3>
+                  <span className={styles.badge}>Seller</span>
+                </div>
+                <p>Analyze your sales performance</p>
+                <ul className={styles.featureList}>
+                  <li>View sales statistics</li>
+                  <li>Track revenue trends</li>
+                  <li>Download reports (CSV)</li>
+                  <li>Product performance</li>
+                </ul>
+                <span className={styles.primaryButton}>View Reports →</span>
               </div>
-              <p>Analyze your sales performance</p>
-              <ul className={styles.featureList}>
-                <li>View sales statistics</li>
-                <li>Track revenue trends</li>
-                <li>Export reports</li>
-                <li>Product performance</li>
-              </ul>
-              <span className={styles.primaryButtonMuted}>View Reports (Coming soon)</span>
-            </div>
+            </button>
           </div>
         </div>
     </div>

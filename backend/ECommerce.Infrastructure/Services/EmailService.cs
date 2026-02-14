@@ -267,5 +267,102 @@ public class EmailService : IEmailService
 
         await SendEmailAsync(to, subject, body);
     }
+
+    public async Task SendOrderPlacedEmailAsync(string to, string customerName, string orderNumber, decimal totalAmount, DateTime createdAt)
+    {
+        var formattedDate = TimeZoneHelper.FormatIstDateTime(createdAt);
+        var subject = $"Order Confirmation - {orderNumber} - ECommerce";
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #f59e0b;'>Order Placed Successfully</h2>
+                    <p>Dear {customerName},</p>
+                    <p>Thank you for your order. We have received your order and will process it shortly.</p>
+                    <div style='background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;'>
+                        <p style='margin: 0;'><strong>Order Number:</strong> {orderNumber}</p>
+                        <p style='margin: 10px 0 0 0;'><strong>Order Date:</strong> {formattedDate}</p>
+                        <p style='margin: 10px 0 0 0;'><strong>Total Amount:</strong> ₹{totalAmount:N2}</p>
+                    </div>
+                    <p>You can track your order status from your account dashboard.</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
+
+    public async Task SendOrderConfirmedEmailAsync(string to, string customerName, string orderNumber)
+    {
+        var subject = $"Order Confirmed - {orderNumber} - ECommerce";
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #3b82f6;'>Order Confirmed</h2>
+                    <p>Dear {customerName},</p>
+                    <p>Your order <strong>{orderNumber}</strong> has been confirmed and is being prepared for shipment.</p>
+                    <div style='background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #bfdbfe;'>
+                        <p style='margin: 0; color: #1e40af;'><strong>Order Number:</strong> {orderNumber}</p>
+                        <p style='margin: 10px 0 0 0; color: #1e40af;'><strong>Status:</strong> Confirmed</p>
+                    </div>
+                    <p>We will notify you when your order is shipped.</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
+
+    public async Task SendOrderCancelledEmailAsync(string to, string customerName, string orderNumber)
+    {
+        var subject = $"Order Cancelled - {orderNumber} - ECommerce";
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #dc3545;'>Order Cancelled</h2>
+                    <p>Dear {customerName},</p>
+                    <p>Your order <strong>{orderNumber}</strong> has been cancelled.</p>
+                    <div style='background-color: #f8d7da; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #f5c6cb;'>
+                        <p style='margin: 0; color: #721c24;'><strong>Order Number:</strong> {orderNumber}</p>
+                        <p style='margin: 10px 0 0 0; color: #721c24;'><strong>Status:</strong> Cancelled</p>
+                    </div>
+                    <p>If you did not request this cancellation or have any questions, please contact our support team.</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
+
+    public async Task SendOrderDeliveredEmailAsync(string to, string customerName, string orderNumber, DateTime? deliveredDate = null)
+    {
+        var formattedDate = deliveredDate.HasValue
+            ? TimeZoneHelper.FormatIstDateTime(deliveredDate.Value)
+            : TimeZoneHelper.FormatIstDateTime(DateTime.UtcNow);
+        var subject = $"Order Delivered - {orderNumber} - ECommerce";
+        var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #10b981;'>Order Delivered</h2>
+                    <p>Dear {customerName},</p>
+                    <p>Your order <strong>{orderNumber}</strong> has been delivered. We hope you enjoy your purchase!</p>
+                    <div style='background-color: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #a7f3d0;'>
+                        <p style='margin: 0; color: #065f46;'><strong>Order Number:</strong> {orderNumber}</p>
+                        <p style='margin: 10px 0 0 0; color: #065f46;'><strong>Delivered On:</strong> {formattedDate}</p>
+                    </div>
+                    <p>Thank you for shopping with us. We look forward to serving you again.</p>
+                    <p>Best regards,<br>ECommerce Team</p>
+                </div>
+            </body>
+            </html>";
+
+        await SendEmailAsync(to, subject, body);
+    }
 }
 
